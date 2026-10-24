@@ -3,6 +3,7 @@ import Player from "../entities/Player";
 import Bullet from "../entities/Bullet";
 import ZombieManager from "../entities/ZombieManager";
 import Zombie from "../entities/Zombie";
+import { Obstacle } from "../entities/Obstacle";
 
 class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -11,6 +12,7 @@ class GameScene extends Phaser.Scene {
   private bullets!: Phaser.Physics.Arcade.Group;
   private waitingForNextWave = false;
   private registeredZombies = new Set<Zombie>();
+  private obstacles: Obstacle[] = [];
 
   private health = 100;
   private uiCamera!: Phaser.Cameras.Scene2D.Camera;
@@ -50,6 +52,20 @@ class GameScene extends Phaser.Scene {
 
     this.player = new Player(this, 1000, 1000);
 
+    this.obstacles = [
+      new Obstacle(this, 800, 800, 100, 100),
+      new Obstacle(this, 1200, 800, 100, 100),
+      new Obstacle(this, 800, 1200, 100, 100),
+      new Obstacle(this, 1200, 1200, 100, 100),
+      new Obstacle(this, 1000, 700, 140, 60),
+      new Obstacle(this, 700, 1000, 60, 140),
+      new Obstacle(this, 1300, 1000, 60, 140),
+    ];
+
+    for (const obstacle of this.obstacles) {
+      this.physics.add.collider(this.player.sprite, obstacle.sprite);
+    }
+
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.wasd = this.input.keyboard!.addKeys("W,A,S,D") as typeof this.wasd;
 
@@ -76,6 +92,20 @@ class GameScene extends Phaser.Scene {
       maxSize: 50,
       runChildUpdate: false,
     });
+
+    for (const obstacle of this.obstacles) {
+      this.physics.add.collider(this.bullets, obstacle.sprite, (obj1, obj2) => {
+        const bulletSprite = this.bullets.contains(
+          obj1 as Phaser.GameObjects.GameObject,
+        )
+          ? (obj1 as Phaser.GameObjects.Arc)
+          : (obj2 as Phaser.GameObjects.Arc);
+
+        if (bulletSprite.active) {
+          bulletSprite.destroy();
+        }
+      });
+    }
 
     const title = this.add.text(16, 16, "AFTERFALL", {
       fontSize: "22px",
@@ -126,6 +156,7 @@ class GameScene extends Phaser.Scene {
     this.uiCamera.ignore([
       graphics,
       this.player.sprite,
+      ...this.obstacles.map((obstacle) => obstacle.sprite),
       ...this.zombieManager.getAll().map((zombie) => zombie.sprite),
     ]);
 
@@ -206,6 +237,10 @@ class GameScene extends Phaser.Scene {
       if (this.registeredZombies.has(zombie)) continue;
 
       this.registeredZombies.add(zombie);
+
+      for (const obstacle of this.obstacles) {
+        this.physics.add.collider(zombie.sprite, obstacle.sprite);
+      }
 
       this.physics.add.overlap(this.player.sprite, zombie.sprite, () => {
         const now = this.time.now;
