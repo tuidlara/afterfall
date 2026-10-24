@@ -1,10 +1,11 @@
 import Phaser from "phaser";
 import Player from "../entities/Player";
+import Zombie from "../entities/Zombie";
 
 class GameScene extends Phaser.Scene {
   private player!: Player;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-  private zombie!: Phaser.GameObjects.Rectangle;
+  private zombie!: Zombie;
   private bullets!: Phaser.Physics.Arcade.Group;
 
   private health = 100;
@@ -51,7 +52,6 @@ class GameScene extends Phaser.Scene {
     this.cameras.main.startFollow(this.player.sprite);
     this.cameras.main.setZoom(1.5);
 
-    // Converte a posição do mouse para as coordenadas do mundo, considerando o zoom da câmera
     this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
       const worldPoint = pointer.positionToCamera(
         this.cameras.main
@@ -142,14 +142,10 @@ class GameScene extends Phaser.Scene {
       this.healthText,
     ];
 
-    this.zombie = this.add.rectangle(1200, 1000, 28, 28, 0xe74c3c);
-    this.physics.add.existing(this.zombie);
-
-    const zombieBody = this.zombie.body as Phaser.Physics.Arcade.Body;
-    zombieBody.setCollideWorldBounds(true);
+    this.zombie = new Zombie(this, 1200, 1000);
 
     // Limita o dano recebido a uma vez por segundo enquanto houver contato com o zumbi
-    this.physics.add.overlap(this.player.sprite, this.zombie, () => {
+    this.physics.add.overlap(this.player.sprite, this.zombie.sprite, () => {
       const now = this.time.now;
 
       if (!this.gameOver && now - this.lastDamageTime >= 1000) {
@@ -160,10 +156,10 @@ class GameScene extends Phaser.Scene {
 
     this.physics.add.overlap(
       this.bullets,
-      this.zombie,
-      (bullet, zombie) => {
+      this.zombie.sprite,
+      (bullet) => {
         bullet.destroy();
-        (zombie as Phaser.GameObjects.Rectangle).destroy();
+        this.zombie.sprite.destroy();
       }
     );
 
@@ -175,7 +171,7 @@ class GameScene extends Phaser.Scene {
     this.uiCamera.ignore([
       graphics,
       this.player.sprite,
-      this.zombie,
+      this.zombie.sprite,
     ]);
 
     this.cameras.main.ignore(this.uiObjects);
@@ -207,20 +203,8 @@ class GameScene extends Phaser.Scene {
     direction.normalize();
     body.setVelocity(direction.x * 220, direction.y * 220);
 
-    if (this.zombie.active) {
-      const zombieBody = this.zombie.body as Phaser.Physics.Arcade.Body;
-
-      const angle = Phaser.Math.Angle.Between(
-        this.zombie.x,
-        this.zombie.y,
-        this.player.sprite.x,
-        this.player.sprite.y
-      );
-
-      zombieBody.setVelocity(
-        Math.cos(angle) * 80,
-        Math.sin(angle) * 80
-      );
+    if (this.zombie.sprite.active) {
+      this.zombie.follow(this.player.sprite);
     }
   }
 
