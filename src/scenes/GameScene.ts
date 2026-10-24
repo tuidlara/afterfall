@@ -1,7 +1,8 @@
 import Phaser from "phaser";
+import Player from "../entities/Player";
 
 class GameScene extends Phaser.Scene {
-  private player!: Phaser.GameObjects.Rectangle;
+  private player!: Player;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private zombie!: Phaser.GameObjects.Rectangle;
   private bullets!: Phaser.Physics.Arcade.Group;
@@ -41,17 +42,13 @@ class GameScene extends Phaser.Scene {
 
     this.physics.world.setBounds(0, 0, 2000, 2000);
 
-    this.player = this.add.rectangle(1000, 1000, 28, 28, 0x55ddaa);
-    this.physics.add.existing(this.player);
-
-    const playerBody = this.player.body as Phaser.Physics.Arcade.Body;
-    playerBody.setCollideWorldBounds(true);
+    this.player = new Player(this, 1000, 1000);
 
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.wasd = this.input.keyboard!.addKeys("W,A,S,D") as typeof this.wasd;
 
     this.cameras.main.setBounds(0, 0, 2000, 2000);
-    this.cameras.main.startFollow(this.player);
+    this.cameras.main.startFollow(this.player.sprite);
     this.cameras.main.setZoom(1.5);
 
     // Converte a posição do mouse para as coordenadas do mundo, considerando o zoom da câmera
@@ -61,13 +58,13 @@ class GameScene extends Phaser.Scene {
       ) as Phaser.Math.Vector2;
 
       const angle = Phaser.Math.Angle.Between(
-        this.player.x,
-        this.player.y,
+        this.player.sprite.x,
+        this.player.sprite.y,
         worldPoint.x,
         worldPoint.y
       );
 
-      this.player.setRotation(angle);
+      this.player.sprite.setRotation(angle);
     });
 
     this.bullets = this.physics.add.group({
@@ -79,8 +76,8 @@ class GameScene extends Phaser.Scene {
       if (pointer.button !== 0 || this.gameOver) return;
 
       const bullet = this.add.circle(
-        this.player.x,
-        this.player.y,
+        this.player.sprite.x,
+        this.player.sprite.y,
         5,
         0xffff66
       );
@@ -96,8 +93,8 @@ class GameScene extends Phaser.Scene {
       ) as Phaser.Math.Vector2;
 
       const angle = Phaser.Math.Angle.Between(
-        this.player.x,
-        this.player.y,
+        this.player.sprite.x,
+        this.player.sprite.y,
         worldPoint.x,
         worldPoint.y
       );
@@ -152,7 +149,7 @@ class GameScene extends Phaser.Scene {
     zombieBody.setCollideWorldBounds(true);
 
     // Limita o dano recebido a uma vez por segundo enquanto houver contato com o zumbi
-    this.physics.add.overlap(this.player, this.zombie, () => {
+    this.physics.add.overlap(this.player.sprite, this.zombie, () => {
       const now = this.time.now;
 
       if (!this.gameOver && now - this.lastDamageTime >= 1000) {
@@ -175,14 +172,19 @@ class GameScene extends Phaser.Scene {
     this.uiCamera.setScroll(0, 0);
     this.uiCamera.setZoom(1);
 
-    this.uiCamera.ignore([graphics, this.player, this.zombie]);
+    this.uiCamera.ignore([
+      graphics,
+      this.player.sprite,
+      this.zombie,
+    ]);
+
     this.cameras.main.ignore(this.uiObjects);
   }
 
   update() {
     if (this.gameOver) return;
 
-    const body = this.player.body as Phaser.Physics.Arcade.Body;
+    const body = this.player.body;
     const direction = new Phaser.Math.Vector2(0, 0);
 
     if (this.wasd.A.isDown || this.cursors.left.isDown) {
@@ -211,8 +213,8 @@ class GameScene extends Phaser.Scene {
       const angle = Phaser.Math.Angle.Between(
         this.zombie.x,
         this.zombie.y,
-        this.player.x,
-        this.player.y
+        this.player.sprite.x,
+        this.player.sprite.y
       );
 
       zombieBody.setVelocity(
@@ -236,20 +238,17 @@ class GameScene extends Phaser.Scene {
 
     this.healthText.setText(`${this.health} / 100`);
 
-    this.player.setFillStyle(0xff5555);
+    this.player.sprite.setFillStyle(0xff5555);
 
     this.time.delayedCall(150, () => {
-      if (this.player.active && !this.gameOver) {
-        this.player.setFillStyle(0x55ddaa);
+      if (this.player.sprite.active && !this.gameOver) {
+        this.player.sprite.setFillStyle(0x55ddaa);
       }
     });
 
     if (this.health <= 0) {
       this.gameOver = true;
-
-      const body = this.player.body as Phaser.Physics.Arcade.Body;
-      body.setVelocity(0, 0);
-
+      this.player.body.setVelocity(0, 0);
       this.physics.pause();
 
       const overlay = this.add.rectangle(
