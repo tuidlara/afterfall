@@ -2,18 +2,22 @@ import Phaser from "phaser";
 import Player from "../entities/Player";
 import Bullet from "../entities/Bullet";
 import ZombieManager from "../entities/ZombieManager";
+import Zombie from "../entities/Zombie";
 
 class GameScene extends Phaser.Scene {
   private player!: Player;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
   private zombieManager!: ZombieManager;
   private bullets!: Phaser.Physics.Arcade.Group;
+  private waitingForNextWave = false;
+  private registeredZombies = new Set<Zombie>();
 
   private health = 100;
   private uiCamera!: Phaser.Cameras.Scene2D.Camera;
   private uiObjects: Phaser.GameObjects.GameObject[] = [];
   private healthBar!: Phaser.GameObjects.Rectangle;
   private healthText!: Phaser.GameObjects.Text;
+  private waveText!: Phaser.GameObjects.Text;
   private gameOver = false;
   private lastDamageTime = 0;
 
@@ -97,34 +101,23 @@ class GameScene extends Phaser.Scene {
       color: "#ffffff",
     });
 
-    this.uiObjects = [title, vidaLabel, barBg, this.healthBar, this.healthText];
+    this.waveText = this.add.text(16, 120, "ONDA 1", {
+      fontSize: "16px",
+      color: "#55ddaa",
+      fontStyle: "bold",
+    });
+
+    this.uiObjects = [
+      title,
+      vidaLabel,
+      barBg,
+      this.healthBar,
+      this.healthText,
+      this.waveText,
+    ];
 
     this.zombieManager = new ZombieManager(this, this.player.sprite);
-    this.zombieManager.spawn(5);
-
-    for (const zombie of this.zombieManager.getAll()) {
-      this.physics.add.overlap(this.player.sprite, zombie.sprite, () => {
-        const now = this.time.now;
-
-        if (!this.gameOver && now - this.lastDamageTime >= 1000) {
-          this.lastDamageTime = now;
-          this.takeDamage(20);
-        }
-      });
-
-      this.physics.add.overlap(this.bullets, zombie.sprite, (obj1, obj2) => {
-        const bulletSprite = this.bullets.contains(
-          obj1 as Phaser.GameObjects.GameObject,
-        )
-          ? (obj1 as Phaser.GameObjects.Arc)
-          : (obj2 as Phaser.GameObjects.Arc);
-
-        if (!zombie.sprite.active || !bulletSprite.active) return;
-
-        bulletSprite.destroy();
-        zombie.sprite.destroy();
-      });
-    }
+    this.zombieManager.startWave();
 
     this.uiCamera = this.cameras.add(0, 0, 960, 600);
     this.uiCamera.setScroll(0, 0);
@@ -137,6 +130,8 @@ class GameScene extends Phaser.Scene {
     ]);
 
     this.cameras.main.ignore(this.uiObjects);
+
+    this.registerNewZombies();
 
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       if (pointer.button !== 0 || this.gameOver) return;
@@ -186,11 +181,56 @@ class GameScene extends Phaser.Scene {
       direction.y += 1;
     }
 
-    // Normaliza a direção para evitar que o jogador se mova mais rápido na diagonal
     direction.normalize();
     body.setVelocity(direction.x * 220, direction.y * 220);
 
     this.zombieManager.update();
+    this.registerNewZombies();
+
+    if (this.zombieManager.getAliveCount() === 0 && !this.waitingForNextWave) {
+      this.waitingForNextWave = true;
+
+      this.time.delayedCall(2000, () => {
+        if (this.gameOver) return;
+
+        this.zombieManager.startWave();
+        this.waveText.setText(`ONDA ${this.zombieManager.getCurrentWave()}`);
+
+        this.waitingForNextWave = false;
+      });
+    }
+  }
+
+  private registerNewZombies() {
+    for (const zombie of this.zombieManager.getAll()) {
+      if (this.registeredZombies.has(zombie)) continue;
+
+      this.registeredZombies.add(zombie);
+
+      this.physics.add.overlap(this.player.sprite, zombie.sprite, () => {
+        const now = this.time.now;
+
+        if (!this.gameOver && now - this.lastDamageTime >= 1000) {
+          this.lastDamageTime = now;
+          this.takeDamage(20);
+        }
+      });
+
+      this.physics.add.overlap(this.bullets, zombie.sprite, (obj1, obj2) => {
+        const bulletSprite = this.bullets.contains(
+          obj1 as Phaser.GameObjects.GameObject,
+        )
+          ? (obj1 as Phaser.GameObjects.Arc)
+          : (obj2 as Phaser.GameObjects.Arc);
+
+        if (!zombie.sprite.active || !bulletSprite.active) return;
+
+        bulletSprite.destroy();
+        zombie.sprite.destroy();
+      });
+
+      this.uiCamera.ignore(zombie.sprite);
+    }
   }
 
   private takeDamage(amount: number) {

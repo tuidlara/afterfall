@@ -3,13 +3,20 @@ import Zombie from "./Zombie";
 
 export default class ZombieManager {
   private zombies: Zombie[] = [];
-
   private scene: Phaser.Scene;
   private player: Phaser.GameObjects.Rectangle;
+  private currentWave = 0;
 
   constructor(scene: Phaser.Scene, player: Phaser.GameObjects.Rectangle) {
     this.scene = scene;
     this.player = player;
+  }
+
+  startWave() {
+    this.currentWave++;
+
+    const count = 5 + (this.currentWave - 1) * 2;
+    this.spawn(count);
   }
 
   spawn(count: number) {
@@ -44,5 +51,13 @@ export default class ZombieManager {
 
   getAll() {
     return this.zombies;
+  }
+
+  getAliveCount() {
+    return this.zombies.filter((zombie) => zombie.sprite.active).length;
+  }
+
+  getCurrentWave() {
+    return this.currentWave;
   }
 }
