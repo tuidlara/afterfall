@@ -1,4 +1,3 @@
-
 import Phaser from "phaser";
 import "./style.css";
 import GameScene from "./scenes/GameScene";
