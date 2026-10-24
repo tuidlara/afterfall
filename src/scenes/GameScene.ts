@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import Player from "../entities/Player";
 import Zombie from "../entities/Zombie";
+import Bullet from "../entities/Bullet";
 
 class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -54,14 +55,14 @@ class GameScene extends Phaser.Scene {
 
     this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
       const worldPoint = pointer.positionToCamera(
-        this.cameras.main
+        this.cameras.main,
       ) as Phaser.Math.Vector2;
 
       const angle = Phaser.Math.Angle.Between(
         this.player.sprite.x,
         this.player.sprite.y,
         worldPoint.x,
-        worldPoint.y
+        worldPoint.y,
       );
 
       this.player.sprite.setRotation(angle);
@@ -70,44 +71,6 @@ class GameScene extends Phaser.Scene {
     this.bullets = this.physics.add.group({
       maxSize: 50,
       runChildUpdate: false,
-    });
-
-    this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-      if (pointer.button !== 0 || this.gameOver) return;
-
-      const bullet = this.add.circle(
-        this.player.sprite.x,
-        this.player.sprite.y,
-        5,
-        0xffff66
-      );
-
-      this.physics.add.existing(bullet);
-      this.bullets.add(bullet);
-      this.uiCamera.ignore(bullet);
-
-      const bulletBody = bullet.body as Phaser.Physics.Arcade.Body;
-
-      const worldPoint = pointer.positionToCamera(
-        this.cameras.main
-      ) as Phaser.Math.Vector2;
-
-      const angle = Phaser.Math.Angle.Between(
-        this.player.sprite.x,
-        this.player.sprite.y,
-        worldPoint.x,
-        worldPoint.y
-      );
-
-      bulletBody.setVelocity(
-        Math.cos(angle) * 600,
-        Math.sin(angle) * 600
-      );
-
-      // Remove o projétil após 1,5 segundo para evitar acumular objetos desnecessários
-      this.time.delayedCall(1500, () => {
-        if (bullet.active) bullet.destroy();
-      });
     });
 
     const title = this.add.text(16, 16, "AFTERFALL", {
@@ -134,17 +97,10 @@ class GameScene extends Phaser.Scene {
       color: "#ffffff",
     });
 
-    this.uiObjects = [
-      title,
-      vidaLabel,
-      barBg,
-      this.healthBar,
-      this.healthText,
-    ];
+    this.uiObjects = [title, vidaLabel, barBg, this.healthBar, this.healthText];
 
     this.zombie = new Zombie(this, 1200, 1000);
 
-    // Limita o dano recebido a uma vez por segundo enquanto houver contato com o zumbi
     this.physics.add.overlap(this.player.sprite, this.zombie.sprite, () => {
       const now = this.time.now;
 
@@ -154,27 +110,43 @@ class GameScene extends Phaser.Scene {
       }
     });
 
-    this.physics.add.overlap(
-      this.bullets,
-      this.zombie.sprite,
-      (bullet) => {
-        bullet.destroy();
-        this.zombie.sprite.destroy();
-      }
-    );
+    this.physics.add.overlap(this.bullets, this.zombie.sprite, (bullet) => {
+      bullet.destroy();
+      this.zombie.sprite.destroy();
+    });
 
-    // A câmera separada mantém o HUD fixo na tela, independentemente do movimento e do zoom do mundo
     this.uiCamera = this.cameras.add(0, 0, 960, 600);
     this.uiCamera.setScroll(0, 0);
     this.uiCamera.setZoom(1);
 
-    this.uiCamera.ignore([
-      graphics,
-      this.player.sprite,
-      this.zombie.sprite,
-    ]);
+    this.uiCamera.ignore([graphics, this.player.sprite, this.zombie.sprite]);
 
     this.cameras.main.ignore(this.uiObjects);
+
+    this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
+      if (pointer.button !== 0 || this.gameOver) return;
+
+      const worldPoint = pointer.positionToCamera(
+        this.cameras.main,
+      ) as Phaser.Math.Vector2;
+
+      const angle = Phaser.Math.Angle.Between(
+        this.player.sprite.x,
+        this.player.sprite.y,
+        worldPoint.x,
+        worldPoint.y,
+      );
+
+      const bullet = new Bullet(
+        this,
+        this.player.sprite.x,
+        this.player.sprite.y,
+      );
+
+      this.bullets.add(bullet.sprite);
+      this.uiCamera.ignore(bullet.sprite);
+      bullet.setVelocity(angle);
+    });
   }
 
   update() {
@@ -211,14 +183,9 @@ class GameScene extends Phaser.Scene {
   private takeDamage(amount: number) {
     this.health = Math.max(0, this.health - amount);
 
-    this.healthBar.setDisplaySize(
-      160 * (this.health / 100),
-      18
-    );
+    this.healthBar.setDisplaySize(160 * (this.health / 100), 18);
 
-    this.healthBar.setFillStyle(
-      this.health <= 40 ? 0xe74c3c : 0x55dd66
-    );
+    this.healthBar.setFillStyle(this.health <= 40 ? 0xe74c3c : 0x55dd66);
 
     this.healthText.setText(`${this.health} / 100`);
 
@@ -235,9 +202,7 @@ class GameScene extends Phaser.Scene {
       this.player.body.setVelocity(0, 0);
       this.physics.pause();
 
-      const overlay = this.add.rectangle(
-        480, 300, 960, 600, 0x000000, 0.75
-      );
+      const overlay = this.add.rectangle(480, 300, 960, 600, 0x000000, 0.75);
 
       const deathText = this.add
         .text(480, 260, "VOCÊ MORREU", {
