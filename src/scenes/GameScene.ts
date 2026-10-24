@@ -146,7 +146,11 @@ class GameScene extends Phaser.Scene {
       this.waveText,
     ];
 
-    this.zombieManager = new ZombieManager(this, this.player.sprite);
+    this.zombieManager = new ZombieManager(
+      this,
+      this.player.sprite,
+      this.obstacles.map((obstacle) => obstacle.sprite),
+    );
     this.zombieManager.startWave();
 
     this.uiCamera = this.cameras.add(0, 0, 960, 600);

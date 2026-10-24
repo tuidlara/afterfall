@@ -5,11 +5,17 @@ export default class ZombieManager {
   private zombies: Zombie[] = [];
   private scene: Phaser.Scene;
   private player: Phaser.GameObjects.Rectangle;
+  private obstacles: Phaser.GameObjects.Rectangle[];
   private currentWave = 0;
 
-  constructor(scene: Phaser.Scene, player: Phaser.GameObjects.Rectangle) {
+  constructor(
+    scene: Phaser.Scene,
+    player: Phaser.GameObjects.Rectangle,
+    obstacles: Phaser.GameObjects.Rectangle[] = [],
+  ) {
     this.scene = scene;
     this.player = player;
+    this.obstacles = obstacles;
   }
 
   startWave() {
@@ -44,7 +50,7 @@ export default class ZombieManager {
   update() {
     for (const zombie of this.zombies) {
       if (zombie.sprite.active) {
-        zombie.follow(this.player);
+        zombie.follow(this.player, this.obstacles);
       }
     }
   }
