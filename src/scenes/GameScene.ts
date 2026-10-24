@@ -1,12 +1,12 @@
 import Phaser from "phaser";
 import Player from "../entities/Player";
-import Zombie from "../entities/Zombie";
 import Bullet from "../entities/Bullet";
+import ZombieManager from "../entities/ZombieManager";
 
 class GameScene extends Phaser.Scene {
   private player!: Player;
   private cursors!: Phaser.Types.Input.Keyboard.CursorKeys;
-  private zombie!: Zombie;
+  private zombieManager!: ZombieManager;
   private bullets!: Phaser.Physics.Arcade.Group;
 
   private health = 100;
@@ -99,27 +99,42 @@ class GameScene extends Phaser.Scene {
 
     this.uiObjects = [title, vidaLabel, barBg, this.healthBar, this.healthText];
 
-    this.zombie = new Zombie(this, 1200, 1000);
+    this.zombieManager = new ZombieManager(this, this.player.sprite);
+    this.zombieManager.spawn(5);
 
-    this.physics.add.overlap(this.player.sprite, this.zombie.sprite, () => {
-      const now = this.time.now;
+    for (const zombie of this.zombieManager.getAll()) {
+      this.physics.add.overlap(this.player.sprite, zombie.sprite, () => {
+        const now = this.time.now;
 
-      if (!this.gameOver && now - this.lastDamageTime >= 1000) {
-        this.lastDamageTime = now;
-        this.takeDamage(20);
-      }
-    });
+        if (!this.gameOver && now - this.lastDamageTime >= 1000) {
+          this.lastDamageTime = now;
+          this.takeDamage(20);
+        }
+      });
 
-    this.physics.add.overlap(this.bullets, this.zombie.sprite, (bullet) => {
-      bullet.destroy();
-      this.zombie.sprite.destroy();
-    });
+      this.physics.add.overlap(this.bullets, zombie.sprite, (obj1, obj2) => {
+        const bulletSprite = this.bullets.contains(
+          obj1 as Phaser.GameObjects.GameObject,
+        )
+          ? (obj1 as Phaser.GameObjects.Arc)
+          : (obj2 as Phaser.GameObjects.Arc);
+
+        if (!zombie.sprite.active || !bulletSprite.active) return;
+
+        bulletSprite.destroy();
+        zombie.sprite.destroy();
+      });
+    }
 
     this.uiCamera = this.cameras.add(0, 0, 960, 600);
     this.uiCamera.setScroll(0, 0);
     this.uiCamera.setZoom(1);
 
-    this.uiCamera.ignore([graphics, this.player.sprite, this.zombie.sprite]);
+    this.uiCamera.ignore([
+      graphics,
+      this.player.sprite,
+      ...this.zombieManager.getAll().map((zombie) => zombie.sprite),
+    ]);
 
     this.cameras.main.ignore(this.uiObjects);
 
@@ -175,9 +190,7 @@ class GameScene extends Phaser.Scene {
     direction.normalize();
     body.setVelocity(direction.x * 220, direction.y * 220);
 
-    if (this.zombie.sprite.active) {
-      this.zombie.follow(this.player.sprite);
-    }
+    this.zombieManager.update();
   }
 
   private takeDamage(amount: number) {

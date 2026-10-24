@@ -1,0 +1,48 @@
+import Phaser from "phaser";
+import Zombie from "./Zombie";
+
+export default class ZombieManager {
+  private zombies: Zombie[] = [];
+
+  private scene: Phaser.Scene;
+  private player: Phaser.GameObjects.Rectangle;
+
+  constructor(scene: Phaser.Scene, player: Phaser.GameObjects.Rectangle) {
+    this.scene = scene;
+    this.player = player;
+  }
+
+  spawn(count: number) {
+    for (let i = 0; i < count; i++) {
+      const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+      const distance = Phaser.Math.Between(250, 400);
+
+      const x = Phaser.Math.Clamp(
+        this.player.x + Math.cos(angle) * distance,
+        20,
+        1980,
+      );
+
+      const y = Phaser.Math.Clamp(
+        this.player.y + Math.sin(angle) * distance,
+        20,
+        1980,
+      );
+
+      const zombie = new Zombie(this.scene, x, y);
+      this.zombies.push(zombie);
+    }
+  }
+
+  update() {
+    for (const zombie of this.zombies) {
+      if (zombie.sprite.active) {
+        zombie.follow(this.player);
+      }
+    }
+  }
+
+  getAll() {
+    return this.zombies;
+  }
+}
