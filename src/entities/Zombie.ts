@@ -82,6 +82,8 @@ export default class Zombie {
     });
 
     if (this.health <= 0) {
+      this.scene.sound.play("zombie-death");
+
       this.healthBarBg.destroy();
       this.healthBar.destroy();
       this.sprite.destroy();
