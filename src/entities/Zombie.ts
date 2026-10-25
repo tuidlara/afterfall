@@ -7,6 +7,9 @@ export default class Zombie {
   public body: Phaser.Physics.Arcade.Body;
   public speed = 80;
 
+  public health = 3;
+  public readonly maxHealth = 3;
+
   // ---- Configuração do mundo / grade (compartilhada por todos os zumbis) ----
   private static readonly CELL = 32;
   private static readonly COLS = Math.ceil(2000 / 32);
@@ -44,6 +47,24 @@ export default class Zombie {
 
     // Desencontra o momento de recalcular caminho entre zumbis
     this.nextRepathAt = scene.time.now + Math.random() * 300;
+  }
+
+  takeDamage(amount: number) {
+    if (!this.sprite.active) return;
+
+    this.health -= amount;
+
+    this.sprite.setFillStyle(0xffffff);
+
+    this.scene.time.delayedCall(100, () => {
+      if (this.sprite.active) {
+        this.sprite.setFillStyle(0xe74c3c);
+      }
+    });
+
+    if (this.health <= 0) {
+      this.sprite.destroy();
+    }
   }
 
   /**

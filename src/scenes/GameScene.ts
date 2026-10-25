@@ -265,7 +265,7 @@ class GameScene extends Phaser.Scene {
         if (!zombie.sprite.active || !bulletSprite.active) return;
 
         bulletSprite.destroy();
-        zombie.sprite.destroy();
+        zombie.takeDamage(1);
       });
 
       this.uiCamera.ignore(zombie.sprite);
