@@ -252,10 +252,17 @@ class GameScene extends Phaser.Scene {
       this.time.delayedCall(2000, () => {
         if (this.gameOver) return;
 
-        this.zombieManager.startWave();
-        this.waveText.setText(`ONDA ${this.zombieManager.getCurrentWave()}`);
+        const nextWave = this.zombieManager.getCurrentWave() + 1;
 
-        this.waitingForNextWave = false;
+        this.showWaveAnnouncement(nextWave, () => {
+          if (this.gameOver) return;
+
+          this.zombieManager.startWave();
+          this.waveText.setText(`ONDA ${this.zombieManager.getCurrentWave()}`);
+          this.registerNewZombies();
+
+          this.waitingForNextWave = false;
+        });
       });
     }
   }
@@ -294,6 +301,45 @@ class GameScene extends Phaser.Scene {
 
       this.uiCamera.ignore([zombie.sprite, ...zombie.getHealthBarObjects()]);
     }
+  }
+
+  private showWaveAnnouncement(wave: number, onComplete: () => void) {
+    const announcement = this.add
+      .text(480, 300, `ONDA ${wave}`, {
+        fontSize: "56px",
+        color: "#55ddaa",
+        fontStyle: "bold",
+        stroke: "#101418",
+        strokeThickness: 8,
+      })
+      .setOrigin(0.5)
+      .setAlpha(0)
+      .setScale(0.7);
+
+    this.uiObjects.push(announcement);
+    this.cameras.main.ignore(announcement);
+
+    this.tweens.add({
+      targets: announcement,
+      alpha: 1,
+      scale: 1,
+      duration: 400,
+      ease: "Back.Out",
+      onComplete: () => {
+        this.time.delayedCall(1000, () => {
+          this.tweens.add({
+            targets: announcement,
+            alpha: 0,
+            scale: 1.15,
+            duration: 300,
+            onComplete: () => {
+              announcement.destroy();
+              onComplete();
+            },
+          });
+        });
+      },
+    });
   }
 
   private takeDamage(amount: number) {
