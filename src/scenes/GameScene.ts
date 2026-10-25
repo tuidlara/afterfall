@@ -39,6 +39,10 @@ class GameScene extends Phaser.Scene {
     super("GameScene");
   }
 
+  preload() {
+    this.load.audio("shot", "/audio/shot.mp3");
+  }
+
   create() {
     this.cameras.main.setBackgroundColor("#171b22");
 
@@ -187,6 +191,8 @@ class GameScene extends Phaser.Scene {
       if (pointer.button !== 0 || this.gameOver) return;
 
       if (this.reloading || this.ammo <= 0) return;
+
+      this.sound.play("shot");
       this.ammo--;
 
       this.ammoText.setText(`MUNIÇÃO: ${this.ammo} / ${this.magazineSize}`);
