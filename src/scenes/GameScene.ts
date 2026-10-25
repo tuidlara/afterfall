@@ -15,11 +15,16 @@ class GameScene extends Phaser.Scene {
   private obstacles: Obstacle[] = [];
 
   private health = 100;
+  private ammo = 12;
+  private readonly magazineSize = 12;
+  private reloading = false;
+  private reloadKey!: Phaser.Input.Keyboard.Key;
   private uiCamera!: Phaser.Cameras.Scene2D.Camera;
   private uiObjects: Phaser.GameObjects.GameObject[] = [];
   private healthBar!: Phaser.GameObjects.Rectangle;
   private healthText!: Phaser.GameObjects.Text;
   private waveText!: Phaser.GameObjects.Text;
+  private ammoText!: Phaser.GameObjects.Text;
   private gameOver = false;
   private lastDamageTime = 0;
 
@@ -68,6 +73,10 @@ class GameScene extends Phaser.Scene {
 
     this.cursors = this.input.keyboard!.createCursorKeys();
     this.wasd = this.input.keyboard!.addKeys("W,A,S,D") as typeof this.wasd;
+
+    this.reloadKey = this.input.keyboard!.addKey(
+      Phaser.Input.Keyboard.KeyCodes.R,
+    );
 
     this.cameras.main.setBounds(0, 0, 2000, 2000);
     this.cameras.main.startFollow(this.player.sprite);
@@ -137,6 +146,11 @@ class GameScene extends Phaser.Scene {
       fontStyle: "bold",
     });
 
+    this.ammoText = this.add.text(16, 146, "MUNIÇÃO: 12 / 12", {
+      fontSize: "16px",
+      color: "#ffffff",
+    });
+
     this.uiObjects = [
       title,
       vidaLabel,
@@ -144,6 +158,7 @@ class GameScene extends Phaser.Scene {
       this.healthBar,
       this.healthText,
       this.waveText,
+      this.ammoText,
     ];
 
     this.zombieManager = new ZombieManager(
@@ -171,6 +186,11 @@ class GameScene extends Phaser.Scene {
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
       if (pointer.button !== 0 || this.gameOver) return;
 
+      if (this.reloading || this.ammo <= 0) return;
+      this.ammo--;
+
+      this.ammoText.setText(`MUNIÇÃO: ${this.ammo} / ${this.magazineSize}`);
+
       const worldPoint = pointer.positionToCamera(
         this.cameras.main,
       ) as Phaser.Math.Vector2;
@@ -196,6 +216,10 @@ class GameScene extends Phaser.Scene {
 
   update() {
     if (this.gameOver) return;
+
+    if (Phaser.Input.Keyboard.JustDown(this.reloadKey)) {
+      this.reload();
+    }
 
     const body = this.player.body;
     const direction = new Phaser.Math.Vector2(0, 0);
@@ -314,6 +338,25 @@ class GameScene extends Phaser.Scene {
       this.uiObjects.push(overlay, deathText, endText);
       this.cameras.main.ignore([overlay, deathText, endText]);
     }
+  }
+
+  private reload() {
+    if (this.reloading || this.ammo === this.magazineSize) return;
+
+    this.reloading = true;
+    this.ammoText.setText("RECARREGANDO...");
+
+    this.time.delayedCall(1500, () => {
+      if (this.gameOver) {
+        this.reloading = false;
+        return;
+      }
+
+      this.ammo = this.magazineSize;
+      this.reloading = false;
+
+      this.ammoText.setText(`MUNIÇÃO: ${this.ammo} / ${this.magazineSize}`);
+    });
   }
 }
 
