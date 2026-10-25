@@ -51,6 +51,8 @@ export default class ZombieManager {
     for (const zombie of this.zombies) {
       if (zombie.sprite.active) {
         zombie.follow(this.player, this.obstacles);
+
+        zombie.updateHealthBar();
       }
     }
   }

@@ -268,7 +268,7 @@ class GameScene extends Phaser.Scene {
         zombie.takeDamage(1);
       });
 
-      this.uiCamera.ignore(zombie.sprite);
+      this.uiCamera.ignore([zombie.sprite, ...zombie.getHealthBarObjects()]);
     }
   }
 

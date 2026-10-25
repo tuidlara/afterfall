@@ -10,6 +10,9 @@ export default class Zombie {
   public health = 3;
   public readonly maxHealth = 3;
 
+  private healthBarBg: Phaser.GameObjects.Rectangle;
+  private healthBar: Phaser.GameObjects.Rectangle;
+
   // ---- Configuração do mundo / grade (compartilhada por todos os zumbis) ----
   private static readonly CELL = 32;
   private static readonly COLS = Math.ceil(2000 / 32);
@@ -37,6 +40,15 @@ export default class Zombie {
     this.sprite = scene.add.rectangle(x, y, 28, 28, 0xe74c3c);
     scene.physics.add.existing(this.sprite);
 
+    this.healthBarBg = scene.add
+      .rectangle(this.sprite.x, this.sprite.y - 24, 34, 5, 0x222222)
+      .setDepth(10);
+
+    this.healthBar = scene.add
+      .rectangle(this.sprite.x, this.sprite.y - 24, 34, 5, 0x55dd66)
+      .setOrigin(0, 0.5)
+      .setDepth(11);
+
     this.body = this.sprite.body as Phaser.Physics.Arcade.Body;
     this.body.setCollideWorldBounds(true);
     this.body.setSize(24, 24);
@@ -54,6 +66,13 @@ export default class Zombie {
 
     this.health -= amount;
 
+    const ratio = Math.max(0, this.health) / this.maxHealth;
+
+    this.healthBar.setDisplaySize(34 * ratio, 5);
+    this.healthBar.setFillStyle(
+      ratio <= 0.33 ? 0xe74c3c : ratio <= 0.66 ? 0xf1c40f : 0x55dd66,
+    );
+
     this.sprite.setFillStyle(0xffffff);
 
     this.scene.time.delayedCall(100, () => {
@@ -63,8 +82,19 @@ export default class Zombie {
     });
 
     if (this.health <= 0) {
+      this.healthBarBg.destroy();
+      this.healthBar.destroy();
       this.sprite.destroy();
     }
+  }
+
+  updateHealthBar() {
+    this.healthBarBg.setPosition(this.sprite.x, this.sprite.y - 24);
+    this.healthBar.setPosition(this.sprite.x - 17, this.sprite.y - 24);
+  }
+
+  getHealthBarObjects() {
+    return [this.healthBarBg, this.healthBar];
   }
 
   /**
