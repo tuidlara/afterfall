@@ -41,6 +41,7 @@ class GameScene extends Phaser.Scene {
 
   preload() {
     this.load.audio("shot", "/audio/shot.mp3");
+    this.load.audio("reload", "/audio/reload.mp3");
   }
 
   create() {
@@ -396,6 +397,7 @@ class GameScene extends Phaser.Scene {
     if (this.reloading || this.ammo === this.magazineSize) return;
 
     this.reloading = true;
+    this.sound.play("reload");
     this.ammoText.setText("RECARREGANDO...");
 
     this.time.delayedCall(1500, () => {
