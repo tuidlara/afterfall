@@ -84,6 +84,27 @@ export default class Zombie {
     if (this.health <= 0) {
       this.scene.sound.play("zombie-death");
 
+      const particles = this.scene.add.particles(
+        this.sprite.x,
+        this.sprite.y,
+        "__WHITE",
+        {
+          speed: { min: 40, max: 140 },
+          angle: { min: 0, max: 360 },
+          scale: { start: 0.7, end: 0 },
+          lifespan: 250,
+          quantity: 12,
+          tint: 0xc0392b,
+          emitting: false,
+        },
+      );
+
+      particles.explode();
+
+      this.scene.time.delayedCall(300, () => {
+        particles.destroy();
+      });
+
       this.healthBarBg.destroy();
       this.healthBar.destroy();
       this.sprite.destroy();
