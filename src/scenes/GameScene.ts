@@ -4,6 +4,7 @@ import Bullet from "../entities/Bullet";
 import ZombieManager from "../entities/ZombieManager";
 import Zombie from "../entities/Zombie";
 import { Obstacle } from "../entities/Obstacle";
+import GameMap from "../world/Map";
 
 class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -13,6 +14,7 @@ class GameScene extends Phaser.Scene {
   private waitingForNextWave = false;
   private registeredZombies = new Set<Zombie>();
   private obstacles: Obstacle[] = [];
+  private gameMap!: GameMap;
 
   private health = 100;
   private ammo = 12;
@@ -46,20 +48,10 @@ class GameScene extends Phaser.Scene {
   }
 
   create() {
-    this.cameras.main.setBackgroundColor("#171b22");
+    this.gameMap = new GameMap(this);
+    this.gameMap.create();
 
-    const graphics = this.add.graphics();
-    graphics.lineStyle(1, 0x252c35, 0.8);
-
-    for (let x = 0; x <= 2000; x += 64) {
-      graphics.lineBetween(x, 0, x, 2000);
-    }
-
-    for (let y = 0; y <= 2000; y += 64) {
-      graphics.lineBetween(0, y, 2000, y);
-    }
-
-    this.physics.world.setBounds(0, 0, 2000, 2000);
+    const graphics = this.gameMap.getGraphics();
 
     this.player = new Player(this, 1000, 1000);
 
