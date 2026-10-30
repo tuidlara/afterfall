@@ -5,6 +5,7 @@ import ZombieManager from "../entities/ZombieManager";
 import Zombie from "../entities/Zombie";
 import { Obstacle } from "../entities/Obstacle";
 import GameMap from "../world/Map";
+import Car from "../world/Car";
 
 class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -14,6 +15,7 @@ class GameScene extends Phaser.Scene {
   private waitingForNextWave = false;
   private registeredZombies = new Set<Zombie>();
   private obstacles: Obstacle[] = [];
+  private cars: Car[] = [];
   private gameMap!: GameMap;
 
   private health = 100;
@@ -55,8 +57,10 @@ class GameScene extends Phaser.Scene {
 
     this.player = new Player(this, 1000, 1000);
 
+    this.cars = [new Car(this, 800, 800)];
+
     this.obstacles = [
-      new Obstacle(this, 800, 800, 100, 100),
+      ...this.cars.map((car) => car.obstacle),
       new Obstacle(this, 1200, 800, 100, 100),
       new Obstacle(this, 800, 1200, 100, 100),
       new Obstacle(this, 1200, 1200, 100, 100),
@@ -175,6 +179,7 @@ class GameScene extends Phaser.Scene {
       ...this.gameMap.getWorldObjects(),
       this.player.sprite,
       ...this.obstacles.map((obstacle) => obstacle.sprite),
+      ...this.cars.flatMap((car) => car.visuals),
       ...this.zombieManager.getAll().map((zombie) => zombie.sprite),
     ]);
 
@@ -331,7 +336,7 @@ class GameScene extends Phaser.Scene {
           .setDepth(20);
 
         this.uiCamera.ignore(damageText);
-        
+
         this.tweens.add({
           targets: damageText,
           y: damageText.y - 35,
