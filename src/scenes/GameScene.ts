@@ -324,6 +324,26 @@ class GameScene extends Phaser.Scene {
           impact.destroy();
         });
 
+        const damageText = this.add
+          .text(zombie.sprite.x, zombie.sprite.y - 25, "-1", {
+            fontSize: "18px",
+            color: "#ff5555",
+            fontStyle: "bold",
+            stroke: "#000000",
+            strokeThickness: 3,
+          })
+          .setOrigin(0.5)
+          .setDepth(20);
+
+        this.tweens.add({
+          targets: damageText,
+          y: damageText.y - 35,
+          alpha: 0,
+          duration: 500,
+          ease: "Cubic.easeOut",
+          onComplete: () => damageText.destroy(),
+        });
+
         bulletSprite.destroy();
         zombie.takeDamage(1);
       });
