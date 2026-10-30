@@ -303,6 +303,27 @@ class GameScene extends Phaser.Scene {
 
         if (!zombie.sprite.active || !bulletSprite.active) return;
 
+        const impact = this.add.particles(
+          bulletSprite.x,
+          bulletSprite.y,
+          "__WHITE",
+          {
+            speed: { min: 30, max: 90 },
+            angle: { min: 0, max: 360 },
+            scale: { start: 0.45, end: 0 },
+            lifespan: 120,
+            quantity: 5,
+            tint: 0xffe6b3,
+            emitting: false,
+          },
+        );
+
+        impact.explode();
+
+        this.time.delayedCall(200, () => {
+          impact.destroy();
+        });
+
         bulletSprite.destroy();
         zombie.takeDamage(1);
       });
