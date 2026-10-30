@@ -172,6 +172,7 @@ class GameScene extends Phaser.Scene {
 
     this.uiCamera.ignore([
       graphics,
+      ...this.gameMap.getWorldObjects(),
       this.player.sprite,
       ...this.obstacles.map((obstacle) => obstacle.sprite),
       ...this.zombieManager.getAll().map((zombie) => zombie.sprite),
@@ -310,6 +311,8 @@ class GameScene extends Phaser.Scene {
           },
         );
 
+        this.uiCamera.ignore(impact);
+
         impact.explode();
 
         this.time.delayedCall(200, () => {
@@ -327,6 +330,8 @@ class GameScene extends Phaser.Scene {
           .setOrigin(0.5)
           .setDepth(20);
 
+        this.uiCamera.ignore(damageText);
+        
         this.tweens.add({
           targets: damageText,
           y: damageText.y - 35,
@@ -341,6 +346,7 @@ class GameScene extends Phaser.Scene {
       });
 
       this.uiCamera.ignore([zombie.sprite, ...zombie.getHealthBarObjects()]);
+      zombie.uiCamera = this.uiCamera;
     }
   }
 

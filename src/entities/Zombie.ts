@@ -25,6 +25,7 @@ export default class Zombie {
 
   // ---- Estado de cada zumbi ----
   private scene: Phaser.Scene;
+  public uiCamera?: Phaser.Cameras.Scene2D.Camera;
   private path: Point[] = [];
   private pathTargetX = -9999;
   private pathTargetY = -9999;
@@ -98,6 +99,8 @@ export default class Zombie {
           emitting: false,
         },
       );
+
+      this.uiCamera?.ignore(particles);
 
       particles.explode();
 
