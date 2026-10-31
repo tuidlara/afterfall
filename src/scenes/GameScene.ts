@@ -7,6 +7,7 @@ import { Obstacle } from "../entities/Obstacle";
 import GameMap from "../world/Map";
 import Car from "../world/Car";
 import Barricade from "../entities/Barricade";
+import Tree from "../entities/Tree";
 
 class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -18,6 +19,7 @@ class GameScene extends Phaser.Scene {
   private obstacles: Obstacle[] = [];
   private cars: Car[] = [];
   private barricades: Barricade[] = [];
+  private trees: Tree[] = [];
   private gameMap!: GameMap;
 
   private health = 100;
@@ -67,9 +69,23 @@ class GameScene extends Phaser.Scene {
 
     this.barricades = [new Barricade(this, 950, 850)];
 
+    this.trees = [
+      new Tree(this, 600, 600, 1.2),
+      new Tree(this, 900, 500, 1),
+      new Tree(this, 1500, 700, 1.4),
+      new Tree(this, 500, 1300, 1.3),
+      new Tree(this, 1600, 1500, 1.1),
+      new Tree(this, 1200, 1600, 1.5),
+      new Tree(this, 180, 180, 1.3),
+      new Tree(this, 1820, 180, 1.2),
+      new Tree(this, 180, 1820, 1.4),
+      new Tree(this, 1820, 1820, 1.3),
+    ];
+
     this.obstacles = [
       ...this.cars.map((car) => car.obstacle),
       ...this.barricades.map((barricade) => barricade.obstacle),
+      ...this.trees.map((tree) => tree.obstacle),
       new Obstacle(this, 1200, 800, 100, 100),
       new Obstacle(this, 800, 1200, 100, 100),
       new Obstacle(this, 1200, 1200, 100, 100),
@@ -192,6 +208,7 @@ class GameScene extends Phaser.Scene {
       ...this.cars.flatMap((car) => car.visuals),
       ...this.barricades.flatMap((barricade) => barricade.visuals),
       ...this.zombieManager.getAll().map((zombie) => zombie.sprite),
+      ...this.trees.flatMap((tree) => tree.visuals),
     ]);
 
     this.cameras.main.ignore(this.uiObjects);
@@ -258,7 +275,7 @@ class GameScene extends Phaser.Scene {
     }
 
     direction.normalize();
-    body.setVelocity(direction.x * 220, direction.y * 220);
+    body.setVelocity(direction.x * 180, direction.y * 180);
 
     this.zombieManager.update();
     this.registerNewZombies();
