@@ -57,6 +57,17 @@ class GameScene extends Phaser.Scene {
     this.gameMap = new GameMap(this);
     this.gameMap.create();
 
+    const nightOverlay = this.add.rectangle(
+      1000,
+      1000,
+      2000,
+      2000,
+      0x080f20,
+      0.48,
+    );
+
+    nightOverlay.setDepth(1000);
+
     const graphics = this.gameMap.getGraphics();
 
     this.player = new Player(this, 1000, 1000);
@@ -200,6 +211,7 @@ class GameScene extends Phaser.Scene {
     this.uiCamera.setZoom(1);
 
     this.uiCamera.ignore([
+      nightOverlay,
       graphics,
       ...this.gameMap.getWorldObjects(),
       this.player.sprite,

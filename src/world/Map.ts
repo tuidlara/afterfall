@@ -17,7 +17,7 @@ class GameMap {
 
     this.ground = this.scene.add.graphics();
 
-    const groundColors = [0x292e32, 0x2d3236, 0x272c30, 0x303438, 0x252a2e];
+    const groundColors = [0x1d2226, 0x22272b, 0x1b2024, 0x252a2e, 0x1a1f23];
 
     for (let x = 0; x < 2000; x += 64) {
       for (let y = 0; y < 2000; y += 64) {
@@ -49,7 +49,7 @@ class GameMap {
     // Espalha pedaços de concreto pelo cenário
     this.debris = this.scene.add.graphics();
 
-    const debrisColors = [0x625e56, 0x777064, 0x494943, 0x898174, 0x393b39];
+    const debrisColors = [0x504c45, 0x625c51, 0x3d3e3a, 0x71695e, 0x303331];
 
     for (let i = 0; i < 70; i++) {
       const x = Phaser.Math.Between(30, 1970);
@@ -72,7 +72,7 @@ class GameMap {
     // Cria manchas de vegetação que cresceram pelo asfalto
     this.grass = this.scene.add.graphics();
 
-    const grassColors = [0x414b32, 0x50583a, 0x626044, 0x353f2d, 0x6b6746];
+    const grassColors = [0x303a27, 0x3b432d, 0x4b4a35, 0x292f23, 0x504d35];
 
     for (let i = 0; i < 35; i++) {
       const x = Phaser.Math.Between(40, 1960);
