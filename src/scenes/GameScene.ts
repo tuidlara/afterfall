@@ -6,6 +6,7 @@ import Zombie from "../entities/Zombie";
 import { Obstacle } from "../entities/Obstacle";
 import GameMap from "../world/Map";
 import Car from "../world/Car";
+import Barricade from "../entities/Barricade";
 
 class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -16,6 +17,7 @@ class GameScene extends Phaser.Scene {
   private registeredZombies = new Set<Zombie>();
   private obstacles: Obstacle[] = [];
   private cars: Car[] = [];
+  private barricades: Barricade[] = [];
   private gameMap!: GameMap;
 
   private health = 100;
@@ -63,8 +65,11 @@ class GameScene extends Phaser.Scene {
       new Car(this, 1400, 1200, "pickup", 0x9b493d),
     ];
 
+    this.barricades = [new Barricade(this, 950, 850)];
+
     this.obstacles = [
       ...this.cars.map((car) => car.obstacle),
+      ...this.barricades.map((barricade) => barricade.obstacle),
       new Obstacle(this, 1200, 800, 100, 100),
       new Obstacle(this, 800, 1200, 100, 100),
       new Obstacle(this, 1200, 1200, 100, 100),
@@ -183,7 +188,9 @@ class GameScene extends Phaser.Scene {
       ...this.gameMap.getWorldObjects(),
       this.player.sprite,
       ...this.obstacles.map((obstacle) => obstacle.sprite),
+      ...this.obstacles.flatMap((obstacle) => obstacle.visuals),
       ...this.cars.flatMap((car) => car.visuals),
+      ...this.barricades.flatMap((barricade) => barricade.visuals),
       ...this.zombieManager.getAll().map((zombie) => zombie.sprite),
     ]);
 
