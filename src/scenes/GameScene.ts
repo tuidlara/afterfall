@@ -57,7 +57,11 @@ class GameScene extends Phaser.Scene {
 
     this.player = new Player(this, 1000, 1000);
 
-    this.cars = [new Car(this, 800, 800)];
+    this.cars = [
+      new Car(this, 800, 800, "sedan", 0x566b58),
+      new Car(this, 1100, 900, "suv", 0x414b65),
+      new Car(this, 1400, 1200, "pickup", 0x9b493d),
+    ];
 
     this.obstacles = [
       ...this.cars.map((car) => car.obstacle),
