@@ -9,6 +9,7 @@ import Car from "../world/Car";
 import Barricade from "../entities/Barricade";
 import Tree from "../entities/Tree";
 import StreetLight from "../entities/StreetLight";
+import UrbanDebris from "../entities/UrbanDebris";
 
 class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -22,6 +23,7 @@ class GameScene extends Phaser.Scene {
   private barricades: Barricade[] = [];
   private trees: Tree[] = [];
   private streetLights: StreetLight[] = [];
+  private urbanDebris: UrbanDebris[] = [];
   private gameMap!: GameMap;
 
   private health = 100;
@@ -103,10 +105,22 @@ class GameScene extends Phaser.Scene {
       new StreetLight(this, 1100, 250),
     ];
 
+    this.urbanDebris = [
+      new UrbanDebris(this, 250, 900, "barrel"),
+      new UrbanDebris(this, 290, 940, "tire"),
+      new UrbanDebris(this, 1100, 450, "crate"),
+      new UrbanDebris(this, 1200, 500, "concrete"),
+      new UrbanDebris(this, 1700, 650, "tire"),
+      new UrbanDebris(this, 1740, 680, "barrel"),
+      new UrbanDebris(this, 700, 1550, "concrete"),
+      new UrbanDebris(this, 750, 1590, "crate"),
+    ];
+
     this.obstacles = [
       ...this.cars.map((car) => car.obstacle),
       ...this.barricades.map((barricade) => barricade.obstacle),
       ...this.trees.map((tree) => tree.obstacle),
+      ...this.urbanDebris.map((debris) => debris.obstacle),
       new Obstacle(this, 950, 350, 100, 100),
       new Obstacle(this, 350, 1200, 100, 100),
       new Obstacle(this, 1300, 950, 100, 100),
@@ -232,6 +246,7 @@ class GameScene extends Phaser.Scene {
       ...this.zombieManager.getAll().map((zombie) => zombie.sprite),
       ...this.trees.flatMap((tree) => tree.visuals),
       ...this.streetLights.flatMap((light) => light.visuals),
+      ...this.urbanDebris.flatMap((debris) => debris.visuals),
     ]);
 
     this.cameras.main.ignore(this.uiObjects);
