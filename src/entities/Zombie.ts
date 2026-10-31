@@ -129,7 +129,7 @@ export default class Zombie {
    * @param others    lista de todos os zumbis (para não se empilharem)
    */
   follow(
-    target: Phaser.GameObjects.Rectangle,
+    target: Phaser.GameObjects.Image,
     obstacles: Phaser.GameObjects.Rectangle[] = [],
     others: Zombie[] = [],
   ) {
@@ -270,7 +270,7 @@ export default class Zombie {
   }
 
   private repath(
-    target: Phaser.GameObjects.Rectangle,
+    target: Phaser.GameObjects.Image,
     obstacles: Phaser.GameObjects.Rectangle[],
   ) {
     this.pathTargetX = target.x;

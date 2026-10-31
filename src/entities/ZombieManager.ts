@@ -4,13 +4,13 @@ import Zombie from "./Zombie";
 export default class ZombieManager {
   private zombies: Zombie[] = [];
   private scene: Phaser.Scene;
-  private player: Phaser.GameObjects.Rectangle;
+  private player: Phaser.GameObjects.Image;
   private obstacles: Phaser.GameObjects.Rectangle[];
   private currentWave = 0;
 
   constructor(
     scene: Phaser.Scene,
-    player: Phaser.GameObjects.Rectangle,
+    player: Phaser.GameObjects.Image,
     obstacles: Phaser.GameObjects.Rectangle[] = [],
   ) {
     this.scene = scene;

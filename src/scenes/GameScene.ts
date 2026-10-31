@@ -55,6 +55,8 @@ class GameScene extends Phaser.Scene {
     this.load.audio("shot", "/audio/shot.mp3");
     this.load.audio("reload", "/audio/reload.mp3");
     this.load.audio("zombie-death", "/audio/zombie-death.mp3");
+
+    this.load.image("player", "/assets/player.png");
   }
 
   create() {
@@ -156,7 +158,7 @@ class GameScene extends Phaser.Scene {
         worldPoint.y,
       );
 
-      this.player.sprite.setRotation(angle);
+      this.player.sprite.setRotation(angle + Math.PI / 2);
     });
 
     this.bullets = this.physics.add.group({
@@ -469,11 +471,11 @@ class GameScene extends Phaser.Scene {
 
     this.healthText.setText(`${this.health} / 100`);
 
-    this.player.sprite.setFillStyle(0xff5555);
+    this.player.sprite.setTint(0xff5555);
 
     this.time.delayedCall(150, () => {
       if (this.player.sprite.active && !this.gameOver) {
-        this.player.sprite.setFillStyle(0x55ddaa);
+        this.player.sprite.clearTint();
       }
     });
 
