@@ -8,6 +8,7 @@ import GameMap from "../world/Map";
 import Car from "../world/Car";
 import Barricade from "../entities/Barricade";
 import Tree from "../entities/Tree";
+import StreetLight from "../entities/StreetLight";
 
 class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -20,6 +21,7 @@ class GameScene extends Phaser.Scene {
   private cars: Car[] = [];
   private barricades: Barricade[] = [];
   private trees: Tree[] = [];
+  private streetLights: StreetLight[] = [];
   private gameMap!: GameMap;
 
   private health = 100;
@@ -91,6 +93,14 @@ class GameScene extends Phaser.Scene {
       new Tree(this, 1820, 180, 1.2),
       new Tree(this, 180, 1820, 1.4),
       new Tree(this, 1820, 1820, 1.3),
+    ];
+
+    this.streetLights = [
+      new StreetLight(this, 500, 500),
+      new StreetLight(this, 1450, 500),
+      new StreetLight(this, 500, 1450),
+      new StreetLight(this, 1500, 1500),
+      new StreetLight(this, 1100, 250),
     ];
 
     this.obstacles = [
@@ -221,6 +231,7 @@ class GameScene extends Phaser.Scene {
       ...this.barricades.flatMap((barricade) => barricade.visuals),
       ...this.zombieManager.getAll().map((zombie) => zombie.sprite),
       ...this.trees.flatMap((tree) => tree.visuals),
+      ...this.streetLights.flatMap((light) => light.visuals),
     ]);
 
     this.cameras.main.ignore(this.uiObjects);
