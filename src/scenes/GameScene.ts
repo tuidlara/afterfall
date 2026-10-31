@@ -62,12 +62,12 @@ class GameScene extends Phaser.Scene {
     this.player = new Player(this, 1000, 1000);
 
     this.cars = [
-      new Car(this, 800, 800, "sedan", 0x566b58),
-      new Car(this, 1100, 900, "suv", 0x414b65),
-      new Car(this, 1400, 1200, "pickup", 0x9b493d),
+      new Car(this, 350, 850, "sedan", 0x566b58),
+      new Car(this, 1500, 350, "suv", 0x414b65),
+      new Car(this, 1600, 1200, "pickup", 0x9b493d),
     ];
 
-    this.barricades = [new Barricade(this, 950, 850)];
+    this.barricades = [new Barricade(this, 300, 1500)];
 
     this.trees = [
       new Tree(this, 600, 600, 1.2),
@@ -86,12 +86,12 @@ class GameScene extends Phaser.Scene {
       ...this.cars.map((car) => car.obstacle),
       ...this.barricades.map((barricade) => barricade.obstacle),
       ...this.trees.map((tree) => tree.obstacle),
-      new Obstacle(this, 1200, 800, 100, 100),
-      new Obstacle(this, 800, 1200, 100, 100),
-      new Obstacle(this, 1200, 1200, 100, 100),
-      new Obstacle(this, 1000, 700, 140, 60),
-      new Obstacle(this, 700, 1000, 60, 140),
-      new Obstacle(this, 1300, 1000, 60, 140),
+      new Obstacle(this, 950, 350, 100, 100),
+      new Obstacle(this, 350, 1200, 100, 100),
+      new Obstacle(this, 1300, 950, 100, 100),
+      new Obstacle(this, 1750, 850, 100, 100),
+      new Obstacle(this, 900, 1650, 140, 60),
+      new Obstacle(this, 450, 1650, 60, 140),
     ];
 
     for (const obstacle of this.obstacles) {
