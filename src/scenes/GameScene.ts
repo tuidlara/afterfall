@@ -183,7 +183,7 @@ class GameScene extends Phaser.Scene {
 
     const title = this.add.text(16, 16, "AFTERFALL", {
       fontSize: "22px",
-      color: "#55ddaa",
+      color: "#C2B49A",
       fontStyle: "bold",
     });
 
@@ -207,7 +207,7 @@ class GameScene extends Phaser.Scene {
 
     this.waveText = this.add.text(16, 120, "ONDA 1", {
       fontSize: "16px",
-      color: "#55ddaa",
+      color: "#C2B49A",
       fontStyle: "bold",
     });
 
@@ -428,7 +428,7 @@ class GameScene extends Phaser.Scene {
     const announcement = this.add
       .text(480, 300, `ONDA ${wave}`, {
         fontSize: "56px",
-        color: "#55ddaa",
+        color: "#C2B49A",
         fontStyle: "bold",
         stroke: "#101418",
         strokeThickness: 8,
