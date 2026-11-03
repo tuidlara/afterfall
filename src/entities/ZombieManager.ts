@@ -26,21 +26,50 @@ export default class ZombieManager {
   }
 
   spawn(count: number) {
+    const camera = this.scene.cameras.main;
+    const margin = 100;
+
     for (let i = 0; i < count; i++) {
-      const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
-      const distance = Phaser.Math.Between(250, 400);
+      let x = this.player.x;
+      let y = this.player.y;
+      let attempts = 0;
 
-      const x = Phaser.Math.Clamp(
-        this.player.x + Math.cos(angle) * distance,
-        20,
-        1980,
+      do {
+        const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
+
+        const dx = Math.cos(angle);
+        const dy = Math.sin(angle);
+
+        const halfWidth = camera.worldView.width / 2;
+        const halfHeight = camera.worldView.height / 2;
+
+        const distanceX = halfWidth / Math.max(Math.abs(dx), 0.001);
+        const distanceY = halfHeight / Math.max(Math.abs(dy), 0.001);
+
+        const distance = Math.min(distanceX, distanceY) + margin;
+
+        x = this.player.x + dx * distance;
+        y = this.player.y + dy * distance;
+
+        attempts++;
+      } while (
+        (camera.worldView.contains(x, y) ||
+          x < 20 ||
+          x > 1980 ||
+          y < 20 ||
+          y > 1980) &&
+        attempts < 30
       );
 
-      const y = Phaser.Math.Clamp(
-        this.player.y + Math.sin(angle) * distance,
-        20,
-        1980,
-      );
+      if (
+        camera.worldView.contains(x, y) ||
+        x < 20 ||
+        x > 1980 ||
+        y < 20 ||
+        y > 1980
+      ) {
+        continue;
+      }
 
       const zombie = new Zombie(this.scene, x, y);
       this.zombies.push(zombie);
