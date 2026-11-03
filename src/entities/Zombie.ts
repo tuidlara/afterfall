@@ -3,7 +3,7 @@ import Phaser from "phaser";
 type Point = { x: number; y: number };
 
 export default class Zombie {
-  public sprite: Phaser.GameObjects.Rectangle;
+  public sprite: Phaser.GameObjects.Image;
   public body: Phaser.Physics.Arcade.Body;
   public speed = 80;
 
@@ -38,7 +38,8 @@ export default class Zombie {
   constructor(scene: Phaser.Scene, x: number, y: number) {
     this.scene = scene;
 
-    this.sprite = scene.add.rectangle(x, y, 28, 28, 0xe74c3c);
+    this.sprite = scene.add.image(x, y, "zombie");
+    this.sprite.setDisplaySize(72, 72);
     scene.physics.add.existing(this.sprite);
 
     this.healthBarBg = scene.add
@@ -52,7 +53,7 @@ export default class Zombie {
 
     this.body = this.sprite.body as Phaser.Physics.Arcade.Body;
     this.body.setCollideWorldBounds(true);
-    this.body.setSize(24, 24);
+    this.body.setSize(32 / this.sprite.scaleX, 32 / this.sprite.scaleY);
     this.body.setMaxVelocity(this.speed, this.speed);
 
     this.lastCheckX = x;
@@ -74,11 +75,11 @@ export default class Zombie {
       ratio <= 0.33 ? 0xe74c3c : ratio <= 0.66 ? 0xf1c40f : 0x55dd66,
     );
 
-    this.sprite.setFillStyle(0xffffff);
+    this.sprite.setTint(0xff3333);
 
     this.scene.time.delayedCall(100, () => {
       if (this.sprite.active) {
-        this.sprite.setFillStyle(0xe74c3c);
+        this.sprite.clearTint();
       }
     });
 
