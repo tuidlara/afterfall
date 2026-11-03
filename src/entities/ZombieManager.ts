@@ -28,13 +28,15 @@ export default class ZombieManager {
   spawn(count: number) {
     const camera = this.scene.cameras.main;
     const margin = 100;
+    const minDistance = 80;
 
     for (let i = 0; i < count; i++) {
       let x = this.player.x;
       let y = this.player.y;
       let attempts = 0;
+      let validPosition = false;
 
-      do {
+      while (attempts < 30 && !validPosition) {
         const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
 
         const dx = Math.cos(angle);
@@ -51,31 +53,33 @@ export default class ZombieManager {
         x = this.player.x + dx * distance;
         y = this.player.y + dy * distance;
 
-        attempts++;
-      } while (
-        (camera.worldView.contains(x, y) ||
-          x < 20 ||
-          x > 1980 ||
-          y < 20 ||
-          y > 1980) &&
-        attempts < 30
-      );
+        const insideCamera = camera.worldView.contains(x, y);
+        const outsideMap = x < 20 || x > 1980 || y < 20 || y > 1980;
 
-      if (
-        camera.worldView.contains(x, y) ||
-        x < 20 ||
-        x > 1980 ||
-        y < 20 ||
-        y > 1980
-      ) {
-        continue;
+        const tooClose = this.zombies.some((zombie) => {
+          if (!zombie.sprite.active) return false;
+
+          return (
+            Phaser.Math.Distance.Between(
+              x,
+              y,
+              zombie.sprite.x,
+              zombie.sprite.y,
+            ) < minDistance
+          );
+        });
+
+        validPosition = !insideCamera && !outsideMap && !tooClose;
+
+        attempts++;
       }
+
+      if (!validPosition) continue;
 
       const zombie = new Zombie(this.scene, x, y);
       this.zombies.push(zombie);
     }
   }
-
   update() {
     for (const zombie of this.zombies) {
       if (zombie.sprite.active) {
