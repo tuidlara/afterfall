@@ -48,7 +48,10 @@ export default class ZombieManager {
         const distanceX = halfWidth / Math.max(Math.abs(dx), 0.001);
         const distanceY = halfHeight / Math.max(Math.abs(dy), 0.001);
 
-        const distance = Math.min(distanceX, distanceY) + margin;
+        const extraDistance = Phaser.Math.Between(0, 350);
+
+        const distance =
+          Math.min(distanceX, distanceY) + margin + extraDistance;
 
         x = this.player.x + dx * distance;
         y = this.player.y + dy * distance;
@@ -69,7 +72,21 @@ export default class ZombieManager {
           );
         });
 
-        validPosition = !insideCamera && !outsideMap && !tooClose;
+        const insideObstacle = this.obstacles.some((obstacle) => {
+          if (!obstacle.active) return false;
+
+          const padding = 20;
+
+          const left = obstacle.x - obstacle.width / 2 - padding;
+          const right = obstacle.x + obstacle.width / 2 + padding;
+          const top = obstacle.y - obstacle.height / 2 - padding;
+          const bottom = obstacle.y + obstacle.height / 2 + padding;
+
+          return x >= left && x <= right && y >= top && y <= bottom;
+        });
+
+        validPosition =
+          !insideCamera && !outsideMap && !tooClose && !insideObstacle;
 
         attempts++;
       }
