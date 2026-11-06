@@ -416,7 +416,77 @@ class GameScene extends Phaser.Scene {
         });
 
         bulletSprite.destroy();
+
+        const zombieX = zombie.sprite.x;
+        const zombieY = zombie.sprite.y;
+
         zombie.takeDamage(1);
+
+        if (!zombie.sprite.active && Math.random() < 0.05) {
+          const medkit = this.add.rectangle(zombieX, zombieY, 18, 18, 0xeeeeee);
+
+          medkit.setStrokeStyle(2, 0xaa3333);
+
+          const cross = this.add
+            .text(zombieX, zombieY, "+", {
+              fontSize: "18px",
+              color: "#aa3333",
+              fontStyle: "bold",
+            })
+            .setOrigin(0.5);
+
+          this.uiCamera.ignore([medkit, cross]);
+
+          this.physics.add.existing(medkit);
+
+          const medkitBody = medkit.body as Phaser.Physics.Arcade.Body;
+          medkitBody.setAllowGravity(false);
+          medkitBody.setImmovable(true);
+
+          this.physics.add.overlap(this.player.sprite, medkit, () => {
+            if (this.gameOver || this.health >= 100 || !medkit.active) return;
+
+            const recovered = Math.min(25, 100 - this.health);
+
+            this.health += recovered;
+
+            this.healthBar.setDisplaySize(160 * (this.health / 100), 18);
+            this.healthBar.setFillStyle(
+              this.health <= 40 ? 0xe74c3c : 0x55dd66,
+            );
+            this.healthText.setText(`${this.health} / 100`);
+
+            const healText = this.add
+              .text(
+                this.player.sprite.x,
+                this.player.sprite.y - 35,
+                `+${recovered} HP`,
+                {
+                  fontSize: "18px",
+                  color: "#55dd66",
+                  fontStyle: "bold",
+                  stroke: "#000000",
+                  strokeThickness: 3,
+                },
+              )
+              .setOrigin(0.5)
+              .setDepth(20);
+
+            this.uiCamera.ignore(healText);
+
+            this.tweens.add({
+              targets: healText,
+              y: healText.y - 35,
+              alpha: 0,
+              duration: 700,
+              ease: "Cubic.easeOut",
+              onComplete: () => healText.destroy(),
+            });
+
+            medkit.destroy();
+            cross.destroy();
+          });
+        }
       });
 
       this.uiCamera.ignore([zombie.sprite, ...zombie.getHealthBarObjects()]);
