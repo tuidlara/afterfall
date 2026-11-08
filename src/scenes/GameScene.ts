@@ -39,6 +39,8 @@ class GameScene extends Phaser.Scene {
   private ammoText!: Phaser.GameObjects.Text;
   private gameOver = false;
   private lastDamageTime = 0;
+  private kills = 0;
+  private killsText!: Phaser.GameObjects.Text;
 
   private wasd!: {
     W: Phaser.Input.Keyboard.Key;
@@ -61,6 +63,18 @@ class GameScene extends Phaser.Scene {
   }
 
   create() {
+    this.gameOver = false;
+    this.health = 100;
+    this.ammo = this.magazineSize;
+    this.reloading = false;
+    this.kills = 0;
+    this.lastDamageTime = 0;
+    this.waitingForNextWave = false;
+    this.registeredZombies.clear();
+    this.uiObjects = [];
+
+    this.physics.resume();
+
     this.gameMap = new GameMap(this);
     this.gameMap.create();
 
@@ -146,6 +160,9 @@ class GameScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, 2000, 2000);
     this.cameras.main.startFollow(this.player.sprite);
     this.cameras.main.setZoom(1.5);
+    this.cameras.main.centerOn(this.player.sprite.x, this.player.sprite.y);
+
+    this.cameras.main.preRender();
 
     this.input.on("pointermove", (pointer: Phaser.Input.Pointer) => {
       const worldPoint = pointer.positionToCamera(
@@ -216,6 +233,11 @@ class GameScene extends Phaser.Scene {
       color: "#ffffff",
     });
 
+    this.killsText = this.add.text(16, 172, "ELIMINAÇÕES: 0", {
+      fontSize: "16px",
+      color: "#C2B49A",
+    });
+
     this.uiObjects = [
       title,
       vidaLabel,
@@ -224,6 +246,7 @@ class GameScene extends Phaser.Scene {
       this.healthText,
       this.waveText,
       this.ammoText,
+      this.killsText,
     ];
 
     this.zombieManager = new ZombieManager(
@@ -422,6 +445,11 @@ class GameScene extends Phaser.Scene {
 
         zombie.takeDamage(1);
 
+        if (!zombie.sprite.active) {
+          this.kills++;
+          this.killsText.setText(`ELIMINAÇÕES: ${this.kills}`);
+        }
+
         if (!zombie.sprite.active && Math.random() < 0.05) {
           const medkit = this.add.rectangle(zombieX, zombieY, 18, 18, 0xeeeeee);
 
@@ -555,25 +583,74 @@ class GameScene extends Phaser.Scene {
       this.player.body.setVelocity(0, 0);
       this.physics.pause();
 
-      const overlay = this.add.rectangle(480, 300, 960, 600, 0x000000, 0.75);
+      const overlay = this.add.rectangle(480, 300, 960, 600, 0x000000, 0.82);
 
       const deathText = this.add
-        .text(480, 260, "VOCÊ MORREU", {
-          fontSize: "48px",
-          color: "#e74c3c",
+        .text(480, 185, "VOCÊ MORREU", {
+          fontSize: "52px",
+          color: "#A64B3C",
           fontStyle: "bold",
+          stroke: "#000000",
+          strokeThickness: 5,
         })
         .setOrigin(0.5);
 
-      const endText = this.add
-        .text(480, 320, "FIM DE JOGO", {
+      const waveResult = this.add
+        .text(
+          480,
+          265,
+          `SOBREVIVEU ATÉ A ONDA ${this.zombieManager.getCurrentWave()}`,
+          {
+            fontSize: "22px",
+            color: "#C2B49A",
+          },
+        )
+        .setOrigin(0.5);
+
+      const killsResult = this.add
+        .text(480, 315, `ZUMBIS ELIMINADOS: ${this.kills}`, {
           fontSize: "22px",
-          color: "#ffffff",
+          color: "#D6C9AD",
         })
         .setOrigin(0.5);
 
-      this.uiObjects.push(overlay, deathText, endText);
-      this.cameras.main.ignore([overlay, deathText, endText]);
+      const restartButton = this.add
+        .text(480, 410, "REINICIAR PARTIDA", {
+          fontSize: "24px",
+          color: "#C2B49A",
+          backgroundColor: "#292B29",
+          padding: { x: 24, y: 14 },
+        })
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+
+      restartButton.on("pointerover", () => {
+        restartButton.setStyle({ backgroundColor: "#454841" });
+      });
+
+      restartButton.on("pointerout", () => {
+        restartButton.setStyle({ backgroundColor: "#292B29" });
+      });
+
+      restartButton.on("pointerdown", () => {
+        this.scene.restart();
+      });
+
+      this.uiObjects.push(
+        overlay,
+        deathText,
+        waveResult,
+        killsResult,
+        restartButton,
+      );
+
+      this.cameras.main.ignore([
+        overlay,
+        deathText,
+        waveResult,
+        killsResult,
+        restartButton,
+      ]);
     }
   }
 

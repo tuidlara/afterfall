@@ -42,8 +42,8 @@ export default class ZombieManager {
         const dx = Math.cos(angle);
         const dy = Math.sin(angle);
 
-        const halfWidth = camera.worldView.width / 2;
-        const halfHeight = camera.worldView.height / 2;
+        const halfWidth = camera.width / (2 * camera.zoom);
+        const halfHeight = camera.height / (2 * camera.zoom);
 
         const distanceX = halfWidth / Math.max(Math.abs(dx), 0.001);
         const distanceY = halfHeight / Math.max(Math.abs(dy), 0.001);
