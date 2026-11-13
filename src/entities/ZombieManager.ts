@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import Zombie from "./Zombie";
+import type { ZombieType } from "./ZombieTypes";
 
 export default class ZombieManager {
   private zombies: Zombie[] = [];
@@ -29,6 +30,16 @@ export default class ZombieManager {
     const camera = this.scene.cameras.main;
     const margin = 100;
     const minDistance = 80;
+
+    let runnerChance = 0;
+
+    if (this.currentWave >= 7) {
+      runnerChance = 0.25;
+    } else if (this.currentWave >= 5) {
+      runnerChance = 0.20;
+    } else if (this.currentWave >= 3) {
+      runnerChance = 0.15;
+    }
 
     for (let i = 0; i < count; i++) {
       let x = this.player.x;
@@ -93,7 +104,10 @@ export default class ZombieManager {
 
       if (!validPosition) continue;
 
-      const zombie = new Zombie(this.scene, x, y);
+      const type: ZombieType =
+        Math.random() < runnerChance ? "runner" : "normal";
+
+      const zombie = new Zombie(this.scene, x, y, type);
       this.zombies.push(zombie);
     }
   }

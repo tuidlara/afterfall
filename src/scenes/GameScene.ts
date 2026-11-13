@@ -58,7 +58,7 @@ class GameScene extends Phaser.Scene {
     this.load.audio("reload", "/audio/reload.mp3");
     this.load.audio("zombie-death", "/audio/zombie-death.mp3");
     this.load.image("zombie", "/assets/zombie.png");
-
+    this.load.image("zombie-runner", "/assets/zombie-runner.png");
     this.load.image("player", "/assets/player.png");
   }
 

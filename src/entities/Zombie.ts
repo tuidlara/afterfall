@@ -1,15 +1,18 @@
 import Phaser from "phaser";
 import ZombiePathfinding from "./ZombiePathfinding";
+import { ZOMBIE_CONFIG, type ZombieType } from "./ZombieTypes";
 
 type Point = { x: number; y: number };
 
 export default class Zombie {
   public sprite: Phaser.GameObjects.Image;
   public body: Phaser.Physics.Arcade.Body;
-  public speed = 80;
+  public readonly type: ZombieType;
+  public readonly speed: number;
+  public readonly damage: number;
 
-  public health = 3;
-  public readonly maxHealth = 3;
+  public health: number;
+  public readonly maxHealth: number;
 
   private healthBarBg: Phaser.GameObjects.Rectangle;
   private healthBar: Phaser.GameObjects.Rectangle;
@@ -28,11 +31,31 @@ export default class Zombie {
   private lastCheckX = 0;
   private lastCheckY = 0;
 
-  constructor(scene: Phaser.Scene, x: number, y: number) {
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    type: ZombieType = "normal",
+  ) {
     this.scene = scene;
+    this.type = type;
 
-    this.sprite = scene.add.image(x, y, "zombie");
+    const config = ZOMBIE_CONFIG[type];
+
+    this.speed = config.speed;
+    this.maxHealth = config.health;
+    this.health = config.health;
+    this.damage = config.damage;
+
+    const texture = type === "runner" ? "zombie-runner" : "zombie";
+
+    this.sprite = scene.add.image(x, y, texture);
     this.sprite.setDisplaySize(72, 72);
+
+    if (type === "tank") {
+      this.sprite.setTint(config.tint);
+    }
+
     scene.physics.add.existing(this.sprite);
 
     this.healthBarBg = scene.add
@@ -72,7 +95,11 @@ export default class Zombie {
 
     this.scene.time.delayedCall(100, () => {
       if (this.sprite.active) {
-        this.sprite.clearTint();
+        if (this.type === "tank") {
+          this.sprite.setTint(ZOMBIE_CONFIG[this.type].tint);
+        } else {
+          this.sprite.clearTint();
+        }
       }
     });
 
@@ -166,7 +193,7 @@ export default class Zombie {
       while (
         this.path.length > 0 &&
         Phaser.Math.Distance.Between(sx, sy, this.path[0].x, this.path[0].y) <
-          12
+        12
       ) {
         this.path.shift();
       }
