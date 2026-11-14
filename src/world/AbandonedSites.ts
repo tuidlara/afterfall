@@ -20,6 +20,9 @@ export default class AbandonedSites {
     this.camp(740, 1420);
     this.grove(650, 2800);
     this.grove(2730, 110);
+    this.shoppingCart(580, 815);
+    this.stretcher(900, 1260);
+    this.workbench(1430, 810);
   }
 
   private addProp(prop: {
@@ -28,6 +31,76 @@ export default class AbandonedSites {
   }) {
     this.obstacles.push(prop.obstacle);
     this.visuals.push(...prop.visuals);
+  }
+
+  private detailProp(x: number, y: number, width: number, height: number) {
+    const obstacle = new Obstacle(this.scene, x, y, width, height);
+    obstacle.visuals.forEach((visual) => visual.setVisible(false));
+    this.obstacles.push(obstacle);
+    this.ground.fillStyle(0x101a1b, 0.45);
+    this.ground.fillRect(x - width / 2 + 3, y - height / 2 + 4, width, height);
+    return (px: number, py: number, w: number, h: number, color: number) => {
+      this.details.fillStyle(color);
+      this.details.fillRect(x + px, y + py, w, h);
+    };
+  }
+
+  private shoppingCart(x: number, y: number) {
+    const rect = this.detailProp(x, y, 32, 24);
+    rect(-16, -8, 28, 18, 0x303e3b);
+    rect(-14, -6, 24, 14, 0x1a2929);
+    for (let col = -12; col < 10; col += 6) {
+      rect(col, -6, 2, 14, 0x7b8575);
+    }
+    rect(-14, -2, 24, 2, 0x606e65);
+    rect(-14, 4, 24, 2, 0x606e65);
+    rect(-16, -8, 28, 2, 0x9b9f86);
+    rect(-16, 8, 28, 2, 0x62523c);
+    rect(12, -12, 4, 18, 0x7e8776);
+    rect(6, -12, 10, 3, 0x735842);
+    rect(-12, 10, 6, 2, 0x121c1d);
+    rect(6, 10, 6, 2, 0x121c1d);
+    this.ground.fillStyle(0xa49872, 0.7);
+    this.ground.fillRect(x - 28, y + 8, 5, 3);
+    this.ground.fillRect(x - 22, y + 18, 7, 4);
+  }
+
+  private stretcher(x: number, y: number) {
+    const rect = this.detailProp(x, y, 52, 24);
+    for (const px of [-22, 16]) {
+      rect(px, -12, 6, 4, 0x172123);
+      rect(px, 8, 6, 4, 0x172123);
+    }
+    rect(-26, -8, 52, 16, 0x7d897e);
+    rect(-22, -6, 44, 12, 0x606a5a);
+    rect(-20, -5, 40, 10, 0xb0aa8c);
+    rect(-19, -4, 10, 8, 0xd0c4a2);
+    rect(-4, -5, 2, 10, 0x6c715e);
+    rect(10, -5, 2, 10, 0x6c715e);
+    rect(0, -1, 7, 4, 0x715444);
+    rect(4, -3, 3, 2, 0x715444);
+    rect(-24, -9, 48, 2, 0xa0ac98);
+    rect(-24, 7, 48, 2, 0x444f47);
+    this.ground.fillStyle(0x878c7a, 0.65);
+    this.ground.fillRect(x + 18, y + 18, 4, 6);
+  }
+
+  private workbench(x: number, y: number) {
+    const rect = this.detailProp(x, y, 48, 28);
+    rect(-24, -14, 48, 28, 0x262f2b);
+    rect(-22, -12, 44, 24, 0x66573f);
+    rect(-20, -10, 40, 2, 0x938064);
+    rect(-20, 4, 40, 2, 0x423e30);
+    rect(-16, -5, 12, 10, 0x222e2d);
+    rect(-14, -3, 8, 6, 0x4e5c51);
+    rect(8, -8, 4, 14, 0x9a9e88);
+    rect(6, -8, 8, 3, 0x9a9e88);
+    rect(8, -8, 4, 2, 0x3d463c);
+    rect(-2, 6, 17, 3, 0x302e25);
+    rect(0, 6, 11, 2, 0x8a7451);
+    this.ground.fillStyle(0x141f21, 0.65);
+    this.ground.fillRect(x - 10, y + 18, 18, 5);
+    this.ground.fillRect(x - 6, y + 22, 8, 3);
   }
 
   private vegetation(x: number, y: number, width: number, height: number) {
