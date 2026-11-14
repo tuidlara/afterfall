@@ -1,10 +1,11 @@
 import Phaser from "phaser";
+import { WORLD_SIZE } from "../world/WorldConfig";
 
 type Point = { x: number; y: number };
 
 export default class ZombiePathfinding {
   private static readonly CELL = 32;
-  private static readonly COLS = Math.ceil(2000 / 32);
+  private static readonly COLS = Math.ceil(WORLD_SIZE / ZombiePathfinding.CELL);
   private static readonly PADDING = 18;
 
   private static grid: Uint8Array | null = null;

@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import Zombie from "./Zombie";
 import type { ZombieType } from "./ZombieTypes";
+import { WORLD_SIZE } from "../world/WorldConfig";
 
 export default class ZombieManager {
   private zombies: Zombie[] = [];
@@ -28,8 +29,8 @@ export default class ZombieManager {
 
   spawn(count: number) {
     const camera = this.scene.cameras.main;
-    const margin = 100;
-    const minDistance = 80;
+    const margin = 400;
+    const minDistance = 160;
 
     let runnerChance = 0;
 
@@ -47,7 +48,7 @@ export default class ZombieManager {
       let attempts = 0;
       let validPosition = false;
 
-      while (attempts < 30 && !validPosition) {
+      while (attempts < 60 && !validPosition) {
         const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
 
         const dx = Math.cos(angle);
@@ -59,7 +60,7 @@ export default class ZombieManager {
         const distanceX = halfWidth / Math.max(Math.abs(dx), 0.001);
         const distanceY = halfHeight / Math.max(Math.abs(dy), 0.001);
 
-        const extraDistance = Phaser.Math.Between(0, 350);
+        const extraDistance = Phaser.Math.Between(0, 700);
 
         const distance =
           Math.min(distanceX, distanceY) + margin + extraDistance;
@@ -67,8 +68,15 @@ export default class ZombieManager {
         x = this.player.x + dx * distance;
         y = this.player.y + dy * distance;
 
-        const insideCamera = camera.worldView.contains(x, y);
-        const outsideMap = x < 20 || x > 1980 || y < 20 || y > 1980;
+        // Mede até a borda real da câmera, inclusive perto dos limites do mapa.
+        const view = camera.worldView;
+        const distanceToView = Math.hypot(
+          Math.max(view.left - x, 0, x - view.right),
+          Math.max(view.top - y, 0, y - view.bottom),
+        );
+        const tooCloseToCamera = distanceToView < margin;
+        const outsideMap =
+          x < 20 || x > WORLD_SIZE - 20 || y < 20 || y > WORLD_SIZE - 20;
 
         const tooClose = this.zombies.some((zombie) => {
           if (!zombie.sprite.active) return false;
@@ -97,7 +105,7 @@ export default class ZombieManager {
         });
 
         validPosition =
-          !insideCamera && !outsideMap && !tooClose && !insideObstacle;
+          !tooCloseToCamera && !outsideMap && !tooClose && !insideObstacle;
 
         attempts++;
       }

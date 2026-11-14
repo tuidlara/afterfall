@@ -10,6 +10,7 @@ import Barricade from "../entities/Barricade";
 import Tree from "../entities/Tree";
 import StreetLight from "../entities/StreetLight";
 import UrbanDebris from "../entities/UrbanDebris";
+import { WORLD_SIZE } from "../world/WorldConfig";
 
 class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -79,10 +80,10 @@ class GameScene extends Phaser.Scene {
     this.gameMap.create();
 
     const nightOverlay = this.add.rectangle(
-      1000,
-      1000,
-      2000,
-      2000,
+      WORLD_SIZE / 2,
+      WORLD_SIZE / 2,
+      WORLD_SIZE,
+      WORLD_SIZE,
       0x080f20,
       0.48,
     );
@@ -97,9 +98,17 @@ class GameScene extends Phaser.Scene {
       new Car(this, 350, 850, "sedan", 0x566b58),
       new Car(this, 1500, 350, "suv", 0x414b65),
       new Car(this, 1600, 1200, "pickup", 0x9b493d),
+      new Car(this, 2360, 990, "sedan", 0x756951),
+      new Car(this, 2200, 1770, "suv", 0x414b65),
+      new Car(this, 2540, 2200, "pickup", 0x766447),
+      new Car(this, 1120, 2450, "sedan", 0x566b58),
     ];
 
-    this.barricades = [new Barricade(this, 300, 1500)];
+    this.barricades = [
+      new Barricade(this, 300, 1500),
+      new Barricade(this, 2190, 2050),
+      new Barricade(this, 2640, 2360),
+    ];
 
     this.trees = [
       new Tree(this, 600, 600, 1.2),
@@ -112,6 +121,14 @@ class GameScene extends Phaser.Scene {
       new Tree(this, 1820, 180, 1.2),
       new Tree(this, 180, 1820, 1.4),
       new Tree(this, 1820, 1820, 1.3),
+      new Tree(this, 2400, 300, 1.1),
+      new Tree(this, 2820, 1200, 1.2),
+      new Tree(this, 2420, 1610, 1.1),
+      new Tree(this, 1550, 2460, 1.4),
+      new Tree(this, 1800, 2460, 1.2),
+      new Tree(this, 1580, 2770, 1.3),
+      new Tree(this, 1830, 2770, 1.1),
+      new Tree(this, 300, 2650, 1.2),
     ];
 
     this.streetLights = [
@@ -120,6 +137,10 @@ class GameScene extends Phaser.Scene {
       new StreetLight(this, 500, 1450),
       new StreetLight(this, 1500, 1500),
       new StreetLight(this, 1100, 250),
+      new StreetLight(this, 2100, 800),
+      new StreetLight(this, 2300, 1500),
+      new StreetLight(this, 1500, 2100),
+      new StreetLight(this, 2800, 2100),
     ];
 
     this.urbanDebris = [
@@ -131,6 +152,11 @@ class GameScene extends Phaser.Scene {
       new UrbanDebris(this, 1740, 680, "barrel"),
       new UrbanDebris(this, 700, 1550, "concrete"),
       new UrbanDebris(this, 750, 1590, "crate"),
+      new UrbanDebris(this, 2440, 2350, "barrel"),
+      new UrbanDebris(this, 2490, 2360, "crate"),
+      new UrbanDebris(this, 2800, 2330, "tire"),
+      new UrbanDebris(this, 2320, 1850, "concrete"),
+      new UrbanDebris(this, 740, 2370, "crate"),
     ];
 
     this.obstacles = [
@@ -158,7 +184,7 @@ class GameScene extends Phaser.Scene {
       Phaser.Input.Keyboard.KeyCodes.R,
     );
 
-    this.cameras.main.setBounds(0, 0, 2000, 2000);
+    this.cameras.main.setBounds(0, 0, WORLD_SIZE, WORLD_SIZE);
     this.cameras.main.startFollow(this.player.sprite);
     this.cameras.main.setZoom(1.5);
     this.cameras.main.centerOn(this.player.sprite.x, this.player.sprite.y);
