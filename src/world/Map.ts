@@ -216,18 +216,18 @@ class GameMap {
 
     this.buildings = [
       new Building(this.scene, 740, 750, 240, 200, "MERCADO", 0x555d3d),
-      new Building(this.scene, 1260, 750, 260, 200, "OFICINA", 0x68513b),
-      new Building(this.scene, 740, 1210, 240, 180, "+ CLINICA", 0x68433d),
-      new Building(this.scene, 2440, 520, 200, 160, "CASA 01", 0x575d49),
-      new Building(this.scene, 2780, 520, 200, 160, "CASA 02", 0x625748),
-      new Building(this.scene, 2440, 780, 200, 160, "CASA 03", 0x625748),
-      new Building(this.scene, 2780, 780, 200, 160, "CASA 04", 0x575d49),
-      new Building(this.scene, 2510, 1390, 300, 200, "LAVANDERIA", 0x485b5a),
+      new Building(this.scene, 1260, 750, 260, 200, "OFICINA", 0x68513b, "workshop"),
+      new Building(this.scene, 740, 1210, 240, 180, "+ CLINICA", 0x68433d, "medical"),
+      new Building(this.scene, 2440, 520, 200, 160, "CASA 01", 0x575d49, "house"),
+      new Building(this.scene, 2780, 520, 200, 160, "CASA 02", 0x625748, "house"),
+      new Building(this.scene, 2440, 780, 200, 160, "CASA 03", 0x625748, "house"),
+      new Building(this.scene, 2780, 780, 200, 160, "CASA 04", 0x575d49, "house"),
+      new Building(this.scene, 2510, 1390, 300, 200, "LAVANDERIA", 0x485b5a, "laundry"),
       new Building(this.scene, 2750, 1800, 260, 220, "MERCADINHO", 0x555d3d),
-      new Building(this.scene, 650, 2530, 300, 240, "FARMACIA", 0x68433d),
-      new Building(this.scene, 1270, 2550, 240, 260, "FERRAGENS", 0x68513b),
-      new Building(this.scene, 2460, 2550, 240, 300, "DEPOSITO A", 0x68513b),
-      new Building(this.scene, 2800, 2550, 240, 300, "DEPOSITO B", 0x515c60),
+      new Building(this.scene, 650, 2530, 300, 240, "FARMACIA", 0x68433d, "medical"),
+      new Building(this.scene, 1270, 2550, 240, 260, "FERRAGENS", 0x68513b, "workshop"),
+      new Building(this.scene, 2460, 2550, 240, 300, "DEPOSITO A", 0x68513b, "warehouse"),
+      new Building(this.scene, 2800, 2550, 240, 300, "DEPOSITO B", 0x515c60, "warehouse"),
     ];
   }
 
