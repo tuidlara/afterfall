@@ -216,8 +216,8 @@ class GameScene extends Phaser.Scene {
         const bulletSprite = this.bullets.contains(
           obj1 as Phaser.GameObjects.GameObject,
         )
-          ? (obj1 as Phaser.GameObjects.Arc)
-          : (obj2 as Phaser.GameObjects.Arc);
+          ? (obj1 as Phaser.GameObjects.Image)
+          : (obj2 as Phaser.GameObjects.Image);
 
         if (bulletSprite.active) {
           bulletSprite.destroy();
@@ -327,11 +327,15 @@ class GameScene extends Phaser.Scene {
         worldPoint.y,
       );
 
-      const bullet = new Bullet(
-        this,
-        this.player.sprite.x,
-        this.player.sprite.y,
-      );
+      this.player.sprite.setRotation(angle + Math.PI / 2);
+      const muzzle = this.player.getMuzzlePosition();
+      if (Bullet.isMuzzleBlocked(
+        this.player.sprite,
+        muzzle,
+        this.obstacles.map((obstacle) => obstacle.sprite),
+      )) return;
+
+      const bullet = new Bullet(this, muzzle.x, muzzle.y);
 
       this.bullets.add(bullet.sprite);
       this.uiCamera.ignore(bullet.sprite);
@@ -415,8 +419,8 @@ class GameScene extends Phaser.Scene {
         const bulletSprite = this.bullets.contains(
           obj1 as Phaser.GameObjects.GameObject,
         )
-          ? (obj1 as Phaser.GameObjects.Arc)
-          : (obj2 as Phaser.GameObjects.Arc);
+          ? (obj1 as Phaser.GameObjects.Image)
+          : (obj2 as Phaser.GameObjects.Image);
 
         if (!zombie.sprite.active || !bulletSprite.active) return;
 

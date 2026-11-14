@@ -15,4 +15,17 @@ export default class Player {
     this.body.setSize(24, 24);
     this.body.setCollideWorldBounds(true);
   }
+
+  getMuzzlePosition() {
+    // Ponta do cano no sprite original de 64×64.
+    const localX = (46 - this.sprite.displayOriginX) * this.sprite.scaleX;
+    const localY = (17 - this.sprite.displayOriginY) * this.sprite.scaleY;
+    const cos = Math.cos(this.sprite.rotation);
+    const sin = Math.sin(this.sprite.rotation);
+
+    return {
+      x: this.sprite.x + localX * cos - localY * sin,
+      y: this.sprite.y + localX * sin + localY * cos,
+    };
+  }
 }
