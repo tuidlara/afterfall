@@ -134,6 +134,7 @@ class GameScene extends Phaser.Scene {
     ];
 
     this.obstacles = [
+      ...this.gameMap.getObstacles(),
       ...this.cars.map((car) => car.obstacle),
       ...this.barricades.map((barricade) => barricade.obstacle),
       ...this.trees.map((tree) => tree.obstacle),
