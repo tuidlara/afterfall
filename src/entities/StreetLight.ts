@@ -4,62 +4,63 @@ export default class StreetLight {
   public visuals: Phaser.GameObjects.GameObject[] = [];
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
-    // A luz fica acima do filtro noturno
-    const lightSteps = 18;
+    const texture = StreetLight.createGlowTexture(scene);
+    const glow = scene.add.image(x + 23, y - 36, texture)
+      .setDisplaySize(360, 300)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setDepth(1001);
+    const core = scene.add.image(x + 23, y - 36, texture)
+      .setDisplaySize(64, 48)
+      .setAlpha(0.45)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setDepth(1001);
 
-    for (let i = 0; i < lightSteps; i++) {
-      const radius = 160 - i * 8;
-      const alpha = 0.012 + (i / lightSteps) * 0.025;
+    const metal = scene.add.graphics().setDepth(2);
+    metal.fillStyle(0x202725);
+    metal.fillRect(x - 7, y + 31, 14, 10);
+    metal.fillStyle(0x292e2c);
+    metal.fillRect(x - 5, y - 39, 10, 77);
+    metal.fillStyle(0x5b6055);
+    metal.fillRect(x - 2, y - 36, 3, 70);
+    metal.fillStyle(0x7b6246);
+    metal.fillRect(x - 3, y + 17, 4, 6);
+    metal.fillRect(x + 1, y - 16, 3, 4);
+    metal.fillStyle(0x353e37);
+    metal.fillRect(x, y - 39, 26, 6);
+    metal.fillStyle(0x747968);
+    metal.fillRect(x + 2, y - 39, 22, 2);
+    metal.fillStyle(0x242c2a);
+    metal.fillRect(x + 13, y - 43, 22, 14);
 
-      const glow = scene.add.circle(
-        x,
-        y - 35,
-        radius,
-        0xffc66b,
-        alpha
-      );
+    const lamp = scene.add.graphics().setDepth(1002);
+    lamp.fillStyle(0x9e7948);
+    lamp.fillRect(x + 15, y - 40, 18, 8);
+    lamp.fillStyle(0xe3b96e);
+    lamp.fillRect(x + 17, y - 39, 14, 6);
+    lamp.fillStyle(0xffe6a6);
+    lamp.fillRect(x + 19, y - 38, 10, 3);
 
-      glow.setBlendMode(Phaser.BlendModes.ADD);
-      glow.setDepth(1001);
+    this.visuals.push(glow, core, metal, lamp);
+  }
 
-      this.visuals.push(glow);
-    }
+  private static createGlowTexture(scene: Phaser.Scene) {
+    const key = "streetlight-glow";
+    if (scene.textures.exists(key)) return key;
 
-    // Poste de metal envelhecido
-    const pole = scene.add.rectangle(
-      x,
-      y,
-      9,
-      75,
-      0x454541
-    );
+    const texture = scene.textures.createCanvas(key, 384, 384);
+    if (!texture) throw new Error("Não foi possível criar a textura de iluminação.");
 
-    pole.setStrokeStyle(2, 0x252522);
-    pole.setDepth(1002);
-
-    // Braço que sustenta a luminária
-    const arm = scene.add.rectangle(
-      x + 12,
-      y - 36,
-      25,
-      5,
-      0x454541
-    );
-
-    arm.setDepth(1002);
-
-    // Luminária amarelada
-    const lamp = scene.add.ellipse(
-      x + 23,
-      y - 36,
-      19,
-      11,
-      0xffd27a
-    );
-
-    lamp.setStrokeStyle(2, 0x665333);
-    lamp.setDepth(1003);
-
-    this.visuals.push(pole, arm, lamp);
+    const context = texture.context;
+    const gradient = context.createRadialGradient(192, 192, 0, 192, 192, 192);
+    gradient.addColorStop(0, "rgba(255, 207, 130, 0.32)");
+    gradient.addColorStop(0.18, "rgba(248, 194, 111, 0.24)");
+    gradient.addColorStop(0.45, "rgba(235, 176, 95, 0.12)");
+    gradient.addColorStop(0.75, "rgba(217, 160, 83, 0.035)");
+    gradient.addColorStop(1, "rgba(217, 160, 83, 0)");
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, 384, 384);
+    texture.refresh();
+    texture.setFilter(Phaser.Textures.FilterMode.LINEAR);
+    return key;
   }
 }
