@@ -101,7 +101,7 @@ class GameScene extends Phaser.Scene {
       new Car(this, 2360, 990, "sedan", 0x756951),
       new Car(this, 2200, 1770, "suv", 0x414b65),
       new Car(this, 2540, 2200, "pickup", 0x766447),
-      new Car(this, 1120, 2450, "sedan", 0x566b58),
+      new Car(this, 1030, 2450, "sedan", 0x566b58),
     ];
 
     this.barricades = [

@@ -29,7 +29,6 @@ export default class Building {
     rect(x, y - 6, width - 16, height - 28, 0x3b4240);
     rect(x, y - height / 2 + 12, width - 12, 8, 0x777361);
 
-    // Faixas e remendos retangulares mantêm o desenho em blocos de pixels.
     for (let offset = -width / 2 + 24; offset < width / 2 - 12; offset += 32) {
       rect(x + offset, y - 8, 2, height - 46, 0x303735);
     }
