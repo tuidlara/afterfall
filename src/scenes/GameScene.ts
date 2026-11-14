@@ -380,7 +380,7 @@ class GameScene extends Phaser.Scene {
 
         if (!this.gameOver && now - this.lastDamageTime >= 1000) {
           this.lastDamageTime = now;
-          this.takeDamage(20);
+          this.takeDamage(zombie.damage);
         }
       });
 
