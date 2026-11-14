@@ -19,6 +19,7 @@ export default class Building {
   ) {
     this.obstacle = new Obstacle(scene, x, y, width, height);
     this.obstacle.visuals.forEach((visual) => visual.setVisible(false));
+    const surroundings = this.createSurroundings(scene, x, y, width, height, style);
 
     const shadow = scene.add.graphics().setDepth(-1);
     shadow.fillStyle(0x101718, 0.5);
@@ -133,6 +134,67 @@ export default class Building {
       fontStyle: "bold",
       color: "#d0c5a3",
     }).setOrigin(0.5).setDepth(3);
-    this.visuals.push(shadow, building, sign);
+    this.visuals.push(surroundings, shadow, building, sign);
+  }
+
+  private createSurroundings(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    style: BuildingStyle,
+  ) {
+    const ground = scene.add.graphics().setDepth(-1.5);
+    const left = x - width / 2;
+    const top = y - height / 2;
+    const front = y + height / 2;
+    const rect = (px: number, py: number, w: number, h: number, color: number, alpha = 1) => {
+      ground.fillStyle(color, alpha);
+      ground.fillRect(px, py, w, h);
+    };
+
+    for (let offset = 6; offset < width - 24; offset += 28) {
+      rect(left + offset, front + 1, 24, 10, 0x626252, 0.5);
+      rect(left + offset + 2, front + 2, 20, 1, 0x8c8770, 0.35);
+      if (offset % 3 === 0) {
+        rect(left + offset + 16, front + 8, 7, 3, 0x252f2c, 0.8);
+      }
+    }
+
+    for (let i = 0; i < 18; i++) {
+      const side = i % 2 === 0 ? -1 : 1;
+      const px = x + side * (width / 2 + 3 + i % 4);
+      const py = top + 12 + (i * 29 + Math.floor(x + y)) % (height - 30);
+      rect(px - 3, py, 7, 12, 0x1c2925, 0.35);
+      rect(px - 2, py + 4, 5, 3, 0x3b4931, 0.85);
+      rect(px, py + 1, 1, 5, 0x6d7550, 0.7);
+      rect(px + 2, py + 7, 2, 3, 0x555e3e, 0.75);
+    }
+
+    for (const offset of [12, width - 32]) {
+      rect(left + offset, top - 8, 20, 8, 0x202b27, 0.45);
+      rect(left + offset + 3, top - 5, 12, 3, 0x47513a, 0.75);
+      rect(left + offset + 10, front + 10, 11, 5, 0x444635, 0.55);
+    }
+
+    const industrial = style === "workshop" || style === "warehouse";
+    for (let i = 0; i < 8; i++) {
+      const offset = 12 + (i * 23 + Math.floor(x)) % (width - 28);
+      if (Math.abs(offset - width / 2) < 38) continue;
+      const px = left + offset;
+      const py = front + 3 + i % 10;
+      if (industrial) {
+        rect(px, py, 9, 3, 0x152021, 0.7);
+        rect(px + 2, py - 1, 4, 2, 0x27322e, 0.6);
+      } else if (style === "house") {
+        rect(px, py, 3, 2, 0x817049, 0.8);
+        rect(px + 4, py + 2, 2, 2, 0x5c633d, 0.75);
+      } else {
+        rect(px, py, 4, 3, 0xa29c80, 0.65);
+        rect(px + 1, py, 2, 1, 0xc2b89b, 0.5);
+      }
+    }
+    return ground;
   }
 }
