@@ -2,6 +2,9 @@ export type ZombieType = "normal" | "runner" | "tank";
 
 export const ZOMBIE_CONFIG = {
   normal: {
+    texture: "zombie",
+    displaySize: 72,
+    bodySize: 32,
     health: 3,
     speed: 80,
     damage: 20,
@@ -9,6 +12,9 @@ export const ZOMBIE_CONFIG = {
     tint: 0xffffff,
   },
   runner: {
+    texture: "zombie-runner",
+    displaySize: 72,
+    bodySize: 32,
     health: 2,
     speed: 120,
     damage: 15,
@@ -16,6 +22,9 @@ export const ZOMBIE_CONFIG = {
     tint: 0xc7a66b,
   },
   tank: {
+    texture: "zombie-tank",
+    displaySize: 84,
+    bodySize: 36,
     health: 7,
     speed: 55,
     damage: 30,

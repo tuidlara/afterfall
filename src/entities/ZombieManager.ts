@@ -9,6 +9,7 @@ export default class ZombieManager {
   private player: Phaser.GameObjects.Image;
   private obstacles: Phaser.GameObjects.Rectangle[];
   private currentWave = 0;
+  private tanksSpawnedThisWave = 0;
 
   constructor(
     scene: Phaser.Scene,
@@ -22,6 +23,7 @@ export default class ZombieManager {
 
   startWave() {
     this.currentWave++;
+    this.tanksSpawnedThisWave = 0;
 
     const count = 5 + (this.currentWave - 1) * 2;
     this.spawn(count);
@@ -31,6 +33,7 @@ export default class ZombieManager {
     const camera = this.scene.cameras.main;
     const margin = 400;
     const minDistance = 160;
+    const tankLimit = this.currentWave >= 15 ? 3 : this.currentWave >= 5 ? 1 : 0;
 
     let runnerChance = 0;
 
@@ -113,10 +116,13 @@ export default class ZombieManager {
       if (!validPosition) continue;
 
       const type: ZombieType =
-        Math.random() < runnerChance ? "runner" : "normal";
+        this.tanksSpawnedThisWave < tankLimit
+          ? "tank"
+          : Math.random() < runnerChance ? "runner" : "normal";
 
       const zombie = new Zombie(this.scene, x, y, type);
       this.zombies.push(zombie);
+      if (type === "tank") this.tanksSpawnedThisWave++;
     }
   }
   update() {

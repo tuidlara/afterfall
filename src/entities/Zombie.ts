@@ -16,6 +16,7 @@ export default class Zombie {
 
   private healthBarBg: Phaser.GameObjects.Rectangle;
   private healthBar: Phaser.GameObjects.Rectangle;
+  private readonly healthBarOffset: number;
 
   private static readonly LOS_PADDING = 12;
 
@@ -47,29 +48,24 @@ export default class Zombie {
     this.health = config.health;
     this.damage = config.damage;
 
-    const texture = type === "runner" ? "zombie-runner" : "zombie";
-
-    this.sprite = scene.add.image(x, y, texture);
-    this.sprite.setDisplaySize(72, 72);
-
-    if (type === "tank") {
-      this.sprite.setTint(config.tint);
-    }
+    this.sprite = scene.add.image(x, y, config.texture);
+    this.sprite.setDisplaySize(config.displaySize, config.displaySize);
+    this.healthBarOffset = type === "tank" ? 36 : 24;
 
     scene.physics.add.existing(this.sprite);
 
     this.healthBarBg = scene.add
-      .rectangle(this.sprite.x, this.sprite.y - 24, 34, 5, 0x222222)
+      .rectangle(this.sprite.x, this.sprite.y - this.healthBarOffset, 34, 5, 0x222222)
       .setDepth(10);
 
     this.healthBar = scene.add
-      .rectangle(this.sprite.x, this.sprite.y - 24, 34, 5, 0x55dd66)
+      .rectangle(this.sprite.x, this.sprite.y - this.healthBarOffset, 34, 5, 0x55dd66)
       .setOrigin(0, 0.5)
       .setDepth(11);
 
     this.body = this.sprite.body as Phaser.Physics.Arcade.Body;
     this.body.setCollideWorldBounds(true);
-    this.body.setSize(32 / this.sprite.scaleX, 32 / this.sprite.scaleY);
+    this.body.setSize(config.bodySize / this.sprite.scaleX, config.bodySize / this.sprite.scaleY);
     this.body.setMaxVelocity(this.speed, this.speed);
 
     this.lastCheckX = x;
@@ -95,11 +91,7 @@ export default class Zombie {
 
     this.scene.time.delayedCall(100, () => {
       if (this.sprite.active) {
-        if (this.type === "tank") {
-          this.sprite.setTint(ZOMBIE_CONFIG[this.type].tint);
-        } else {
-          this.sprite.clearTint();
-        }
+        this.sprite.clearTint();
       }
     });
 
@@ -136,8 +128,8 @@ export default class Zombie {
   }
 
   updateHealthBar() {
-    this.healthBarBg.setPosition(this.sprite.x, this.sprite.y - 24);
-    this.healthBar.setPosition(this.sprite.x - 17, this.sprite.y - 24);
+    this.healthBarBg.setPosition(this.sprite.x, this.sprite.y - this.healthBarOffset);
+    this.healthBar.setPosition(this.sprite.x - 17, this.sprite.y - this.healthBarOffset);
   }
 
   getHealthBarObjects() {
@@ -170,7 +162,7 @@ export default class Zombie {
       target.x,
       target.y,
       obstacles,
-      Zombie.LOS_PADDING,
+      this.type === "tank" ? 18 : Zombie.LOS_PADDING,
     );
 
     if (hasLineOfSight) {
