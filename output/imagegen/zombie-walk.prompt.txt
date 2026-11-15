@@ -1,0 +1,12 @@
+Generated using built-in image_gen. Reference: public/assets/zombie.png.
+Final asset: public/assets/zombie-walk.png.
+
+Use case: stylized-concept
+Asset type: production pixel-art walk-cycle spritesheet for AFTERFALL, a 2D top-down zombie survival game.
+Input image: reference for exact common zombie identity, palette, overhead perspective, ragged clothes, blood marks and pixel style.
+Create ONE transparent PNG, exactly 1536x1024, a strict 3-column by 2-row grid of six equal 512x512 frames. NO visible grid, labels, text or background.
+All six cells contain THE SAME common zombie facing DOWN (south), same overhead camera as reference. Preserve charcoal torn clothes, dull pale green gray skin, dark hair and small dark red wounds. Do not redesign as runner or bulky tank.
+IMPORTANT scale and registration: each character occupies roughly 185 pixels wide and 220 pixels tall inside its 512px cell, centered around local (256,256), roughly within x164..350 y138..360. Keep large transparent margins. Head and torso remain at exactly the same local coordinates and same scale in all six cells. Pixel-art crisp stepped shapes, limited muted colors and dark outline; no smooth painterly rendering.
+Frames in reading order are consecutive phases of ONE seamless slow shambling walk cycle: 0 neutral contact, 1 left short step, 2 left passing, 3 opposite contact, 4 right short step, 5 right passing. Show both feet in all cells; short foreshortened legs for an overhead game, no long legs. Subtle opposing arm swings and restrained shoulder sway. Clearly different feet positions, but no body translation or whole-body spinning. Neutral frame zero usable when stopped. Keep every limb inside its cell. Flat sprite lighting, NO ground shadow, props, weapons, glows, panels or baked checkerboard. Actual transparent alpha.
+
+Refinement: preserve canvas and walk phases; shrink characters to 80% around each cell center to match original in-game silhouette; remove background halos, retain transparent alpha.

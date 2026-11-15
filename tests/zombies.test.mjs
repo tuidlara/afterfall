@@ -83,19 +83,42 @@ test("failed spawn does not consume the wave's tank slot", () => {
 function zombieScene() {
   const timers = [];
   const sounds = [];
+  const animations = new Map();
+  const handlers = [];
+  const events = {
+    on(event, callback, context) { handlers.push({ event, callback, context }); },
+    off(event, callback, context) {
+      const index = handlers.findIndex((h) => h.event === event && h.callback === callback && h.context === context);
+      if (index >= 0) handlers.splice(index, 1);
+    },
+    emit(event, ...args) {
+      for (const h of [...handlers].filter((h) => h.event === event)) h.callback.apply(h.context, args);
+    },
+  };
   function object(x, y, key) {
     return {
       x, y, key, active: true, tint: null, scaleX: 1, scaleY: 1,
-      setDisplaySize(w, h) { this.scaleX = w / 1254; this.scaleY = h / 1254; return this; },
+      setDisplaySize(w, h) { const size = key === "zombie" ? 512 : 1254; this.scaleX = w / size; this.scaleY = h / size; return this; },
       setDepth() { return this; }, setOrigin() { return this; }, setFillStyle() { return this; },
       setRotation(angle) { this.rotation = angle; return this; },
       setPosition(x, y) { this.x = x; this.y = y; return this; },
       setTint(color) { this.tint = color; return this; }, clearTint() { this.tint = null; },
-      destroy() { this.active = false; }, explode() {},
+      setFrame(frame) { this.frame = frame; return this; },
+      anims: { isPlaying: false, timeScale: 1, stop() { this.isPlaying = false; } },
+      play(animation) { this.animation = animation; this.anims.isPlaying = true; return this; },
+      once(_event, callback) { this.onDestroy = callback; return this; },
+      destroy() { this.active = false; this.onDestroy?.(); }, explode() {},
     };
   }
   const scene = {
-    add: { image: object, rectangle: object, particles: object },
+    events,
+    textures: { get: () => ({ setFilter() {} }) },
+    anims: {
+      exists: (key) => animations.has(key),
+      create: (animation) => animations.set(animation.key, animation),
+      generateFrameNumbers: (_key, { start, end }) => Array.from({ length: end - start + 1 }, (_, i) => start + i),
+    },
+    add: { sprite: object, rectangle: object, particles: object },
     physics: { add: { existing(sprite) {
       sprite.body = {
         velocity: { x: 0, y: 0 },
@@ -109,14 +132,58 @@ function zombieScene() {
     sound: { play(key) { sounds.push(key); } },
   };
   const Zombie = load("../src/entities/Zombie.ts", {
-    phaser: { default: { Math: { Distance: {
+    phaser: { default: {
+      Textures: { FilterMode: { NEAREST: 0 } },
+      Scenes: { Events: { POST_UPDATE: "postupdate" } },
+      GameObjects: { Events: { DESTROY: "destroy" } },
+      Math: { Clamp: (value, min, max) => Math.max(min, Math.min(max, value)), Distance: {
       Between: (ax, ay, bx, by) => Math.hypot(ax - bx, ay - by),
     } } } },
     "./ZombiePathfinding": { default: { updateGrid() {}, lineClear() { return true; } } },
     "./ZombieTypes": config,
   }).default;
-  return { scene, timers, sounds, Zombie };
+  return { scene, timers, sounds, Zombie, animations, handlers };
 }
+
+test("common zombie walk uses six frames, preserves collision and only runs during real movement", () => {
+  const { scene, Zombie, animations } = zombieScene();
+  const png = readFileSync(new URL("../public/assets/zombie-walk.png", import.meta.url));
+  assert.equal(png.readUInt32BE(16), Zombie.FRAME_SIZE * 3);
+  assert.equal(png.readUInt32BE(20), Zombie.FRAME_SIZE * 2);
+  const zombie = new Zombie(scene, 100, 200);
+  new Zombie(scene, 400, 200);
+  assert.equal(animations.size, 1);
+  assert.deepEqual(Array.from(animations.get("zombie-walk").frames), [0, 1, 2, 3, 4, 5]);
+  assert.equal(zombie.body.width, 32);
+  assert.equal(zombie.body.height, 32);
+  zombie.follow({ x: 100, y: 500 });
+  const rotation = zombie.sprite.rotation;
+  zombie.sprite.y += 80 / 60;
+  scene.events.emit("postupdate", 0, 1000 / 60);
+  assert.equal(zombie.sprite.anims.isPlaying, true);
+  assert.equal(zombie.sprite.animation.key, "zombie-walk");
+  assert(Math.abs(zombie.sprite.anims.timeScale - 1) < 1e-10);
+  assert.equal(zombie.sprite.rotation, rotation);
+  scene.events.emit("postupdate", 16, 1000 / 60);
+  assert.equal(zombie.sprite.anims.isPlaying, false);
+  assert.equal(zombie.sprite.frame, 0);
+  zombie.sprite.x += 2;
+  zombie.body.setVelocity(0, 0);
+  scene.events.emit("postupdate", 32, 1000 / 60);
+  assert.equal(zombie.sprite.anims.isPlaying, false);
+});
+
+test("walk listeners disappear on death and scene teardown, while runner and tank remain static", () => {
+  const { scene, Zombie, handlers } = zombieScene();
+  const zombie = new Zombie(scene, 100, 200);
+  const second = new Zombie(scene, 300, 200);
+  for (const type of ["runner", "tank"]) new Zombie(scene, 400, 200, type);
+  assert.equal(handlers.length, 2);
+  zombie.takeDamage(3);
+  assert.equal(handlers.length, 1);
+  second.sprite.destroy();
+  assert.equal(handlers.length, 0);
+});
 
 test("all zombie types face the player from every direction without rotating health bars", () => {
   const { scene, Zombie } = zombieScene();

@@ -5,7 +5,8 @@ import { ZOMBIE_CONFIG, type ZombieType } from "./ZombieTypes";
 type Point = { x: number; y: number };
 
 export default class Zombie {
-  public sprite: Phaser.GameObjects.Image;
+  public static readonly FRAME_SIZE = 512;
+  public sprite: Phaser.GameObjects.Sprite;
   public body: Phaser.Physics.Arcade.Body;
   public readonly type: ZombieType;
   public readonly speed: number;
@@ -31,6 +32,9 @@ export default class Zombie {
   private lastCheckAt = 0;
   private lastCheckX = 0;
   private lastCheckY = 0;
+  private lastAnimationX: number;
+  private lastAnimationY: number;
+  private readonly walkStartFrame = Math.floor(Math.random() * 6);
 
   constructor(
     scene: Phaser.Scene,
@@ -48,8 +52,10 @@ export default class Zombie {
     this.health = config.health;
     this.damage = config.damage;
 
-    this.sprite = scene.add.image(x, y, config.texture);
+    this.sprite = scene.add.sprite(x, y, config.texture, 0);
     this.sprite.setDisplaySize(config.displaySize, config.displaySize);
+    this.lastAnimationX = x;
+    this.lastAnimationY = y;
     this.healthBarOffset = type === "tank" ? 36 : 24;
 
     scene.physics.add.existing(this.sprite);
@@ -67,6 +73,22 @@ export default class Zombie {
     this.body.setCollideWorldBounds(true);
     this.body.setSize(config.bodySize / this.sprite.scaleX, config.bodySize / this.sprite.scaleY);
     this.body.setMaxVelocity(this.speed, this.speed);
+
+    if (type === "normal") {
+      scene.textures.get(config.texture).setFilter(Phaser.Textures.FilterMode.NEAREST);
+      if (!scene.anims.exists("zombie-walk")) {
+        scene.anims.create({
+          key: "zombie-walk",
+          frames: scene.anims.generateFrameNumbers(config.texture, { start: 0, end: 5 }),
+          frameRate: 6,
+          repeat: -1,
+        });
+      }
+      scene.events.on(Phaser.Scenes.Events.POST_UPDATE, this.updateWalkAnimation, this);
+      this.sprite.once(Phaser.GameObjects.Events.DESTROY, () => {
+        scene.events.off(Phaser.Scenes.Events.POST_UPDATE, this.updateWalkAnimation, this);
+      });
+    }
 
     this.lastCheckX = x;
     this.lastCheckY = y;
@@ -134,6 +156,25 @@ export default class Zombie {
 
   getHealthBarObjects() {
     return [this.healthBarBg, this.healthBar];
+  }
+
+  private updateWalkAnimation(_time: number, delta: number) {
+    const distance = Math.hypot(
+      this.sprite.x - this.lastAnimationX,
+      this.sprite.y - this.lastAnimationY,
+    );
+    this.lastAnimationX = this.sprite.x;
+    this.lastAnimationY = this.sprite.y;
+    const speed = delta > 0 ? distance * 1000 / delta : 0;
+
+    if (speed < 1 || Math.hypot(this.body.velocity.x, this.body.velocity.y) < 1) {
+      if (this.sprite.anims.isPlaying) this.sprite.anims.stop();
+      this.sprite.setFrame(0);
+      return;
+    }
+
+    this.sprite.anims.timeScale = Phaser.Math.Clamp(speed / this.speed, 0.5, 1.3);
+    this.sprite.play({ key: "zombie-walk", startFrame: this.walkStartFrame }, true);
   }
 
   /**
