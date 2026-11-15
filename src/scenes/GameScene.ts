@@ -86,6 +86,8 @@ class GameScene extends Phaser.Scene {
 
   create() {
     this.gameOver = false;
+    this.setAimCursor(true);
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => this.setAimCursor(false));
     this.progression = new RunProgression();
     this.choosingUpgrade = false;
     this.health = 100;
@@ -660,6 +662,7 @@ class GameScene extends Phaser.Scene {
 
     if (this.health <= 0) {
       this.gameOver = true;
+      this.setAimCursor(false);
       this.player.body.setVelocity(0, 0);
       this.physics.pause();
 
@@ -785,6 +788,7 @@ class GameScene extends Phaser.Scene {
   private openShop() {
     if (this.gameOver || this.choosingUpgrade || !this.shop.isInRange(this.player.sprite)) return;
     this.choosingUpgrade = true;
+    this.setAimCursor(false);
     this.player.body.setVelocity(0, 0);
     this.scene.launch("UpgradeScene", {
       getState: () => ({
@@ -803,9 +807,18 @@ class GameScene extends Phaser.Scene {
         this.updateProgressionHud();
         return true;
       },
-      onClose: () => { this.choosingUpgrade = false; },
+      onClose: () => {
+        this.choosingUpgrade = false;
+        this.setAimCursor(!this.gameOver);
+      },
     });
     this.scene.pause();
+  }
+
+  private setAimCursor(active: boolean) {
+    this.input.setDefaultCursor(active
+      ? 'url("/assets/crosshair.svg") 12 12, crosshair'
+      : "default");
   }
 }
 

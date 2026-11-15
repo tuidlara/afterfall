@@ -140,6 +140,7 @@ test("game over offers return to menu while preserving direct restart", () => {
     return result;
   }
   game.add = { text: object, rectangle: object };
+  game.input = { setDefaultCursor(cursor) { assert.equal(cursor, "default"); } };
   game.healthBar = object();
   game.healthText = object();
   game.player = { sprite: object(), body: { setVelocity() {} } };

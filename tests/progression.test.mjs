@@ -143,6 +143,7 @@ function gameScene() {
   imports["../progression/RunProgression"] = progressionModule;
   const GameScene = load("../src/scenes/GameScene.ts", imports).default;
   const game = new GameScene();
+  game.input = { setDefaultCursor(cursor) { game.currentCursor = cursor; } };
   let data;
   let paused = false;
   game.player = { sprite: { x: 1160, y: 1210 }, body: { setVelocity(x, y) { assert.equal(x, 0); assert.equal(y, 0); } } };
