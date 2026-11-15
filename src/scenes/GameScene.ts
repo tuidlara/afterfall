@@ -71,7 +71,10 @@ class GameScene extends Phaser.Scene {
     this.load.image("zombie", "/assets/zombie.png");
     this.load.image("zombie-runner", "/assets/zombie-runner.png");
     this.load.image("zombie-tank", "/assets/zombie-tank.png");
-    this.load.image("player", "/assets/player.png");
+    this.load.spritesheet("player-walk", "/assets/player-walk-v2.png", {
+      frameWidth: Player.FRAME_SIZE,
+      frameHeight: Player.FRAME_SIZE,
+    });
   }
 
   create() {
