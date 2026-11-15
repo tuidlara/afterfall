@@ -527,7 +527,7 @@ class GameScene extends Phaser.Scene {
         }
 
         if (!zombie.sprite.active && Math.random() < 0.05) {
-          const medkit = this.add.rectangle(zombieX, zombieY, 18, 18, 0xeeeeee);
+          const medkit = this.add.rectangle(zombieX, zombieY, 18, 18, 0xeeeeee).setDepth(-0.5);
 
           medkit.setStrokeStyle(2, 0xaa3333);
 
@@ -537,7 +537,8 @@ class GameScene extends Phaser.Scene {
               color: "#aa3333",
               fontStyle: "bold",
             })
-            .setOrigin(0.5);
+            .setOrigin(0.5)
+            .setDepth(-0.4);
 
           this.uiCamera.ignore([medkit, cross]);
 
