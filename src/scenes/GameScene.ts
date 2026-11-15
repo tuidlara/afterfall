@@ -11,6 +11,9 @@ import Tree from "../entities/Tree";
 import StreetLight from "../entities/StreetLight";
 import UrbanDebris from "../entities/UrbanDebris";
 import { WORLD_SIZE } from "../world/WorldConfig";
+import RunProgression, { type UpgradeId } from "../progression/RunProgression";
+import { ZOMBIE_CONFIG } from "../entities/ZombieTypes";
+import UpgradeShop from "../world/UpgradeShop";
 
 class GameScene extends Phaser.Scene {
   private player!: Player;
@@ -29,7 +32,14 @@ class GameScene extends Phaser.Scene {
 
   private health = 100;
   private ammo = 12;
-  private readonly magazineSize = 12;
+  private progression = new RunProgression();
+  private choosingUpgrade = false;
+  private xpText!: Phaser.GameObjects.Text;
+  private xpBar!: Phaser.GameObjects.Rectangle;
+  private shop!: UpgradeShop;
+  private interactKey!: Phaser.Input.Keyboard.Key;
+  private shopText!: Phaser.GameObjects.Text;
+  private get magazineSize() { return this.progression.magazineSize; }
   private reloading = false;
   private reloadKey!: Phaser.Input.Keyboard.Key;
   private uiCamera!: Phaser.Cameras.Scene2D.Camera;
@@ -65,6 +75,8 @@ class GameScene extends Phaser.Scene {
 
   create() {
     this.gameOver = false;
+    this.progression = new RunProgression();
+    this.choosingUpgrade = false;
     this.health = 100;
     this.ammo = this.magazineSize;
     this.reloading = false;
@@ -93,6 +105,7 @@ class GameScene extends Phaser.Scene {
     const graphics = this.gameMap.getGraphics();
 
     this.player = new Player(this, 1000, 1000);
+    this.shop = new UpgradeShop(this, 1160, 1160);
 
     this.cars = [
       new Car(this, 350, 850, "sedan", 0x566b58),
@@ -160,6 +173,7 @@ class GameScene extends Phaser.Scene {
     ];
 
     this.obstacles = [
+      this.shop.obstacle,
       ...this.gameMap.getObstacles(),
       ...this.cars.map((car) => car.obstacle),
       ...this.barricades.map((barricade) => barricade.obstacle),
@@ -183,6 +197,7 @@ class GameScene extends Phaser.Scene {
     this.reloadKey = this.input.keyboard!.addKey(
       Phaser.Input.Keyboard.KeyCodes.R,
     );
+    this.interactKey = this.input.keyboard!.addKey(Phaser.Input.Keyboard.KeyCodes.E);
 
     this.cameras.main.setBounds(0, 0, WORLD_SIZE, WORLD_SIZE);
     this.cameras.main.startFollow(this.player.sprite);
@@ -265,6 +280,12 @@ class GameScene extends Phaser.Scene {
       color: "#C2B49A",
     });
 
+    this.xpText = this.add.text(16, 200, "", { fontSize: "14px", color: "#a5c3b5" });
+    const xpBarBg = this.add.rectangle(16, 226, 160, 6, 0x303c38).setOrigin(0, 0.5);
+    this.xpBar = this.add.rectangle(16, 226, 160, 6, 0x88b49a).setOrigin(0, 0.5);
+    this.shopText = this.add.text(16, 244, "", { fontSize: "13px", color: "#c2b49a" });
+    this.updateProgressionHud();
+
     this.uiObjects = [
       title,
       vidaLabel,
@@ -274,6 +295,10 @@ class GameScene extends Phaser.Scene {
       this.waveText,
       this.ammoText,
       this.killsText,
+      this.xpText,
+      xpBarBg,
+      this.xpBar,
+      this.shopText,
     ];
 
     this.zombieManager = new ZombieManager(
@@ -292,6 +317,7 @@ class GameScene extends Phaser.Scene {
       graphics,
       ...this.gameMap.getWorldObjects(),
       this.player.sprite,
+      ...this.shop.visuals,
       ...this.obstacles.map((obstacle) => obstacle.sprite),
       ...this.obstacles.flatMap((obstacle) => obstacle.visuals),
       ...this.cars.flatMap((car) => car.visuals),
@@ -307,7 +333,7 @@ class GameScene extends Phaser.Scene {
     this.registerNewZombies();
 
     this.input.on("pointerdown", (pointer: Phaser.Input.Pointer) => {
-      if (pointer.button !== 0 || this.gameOver) return;
+      if (pointer.button !== 0 || this.gameOver || this.choosingUpgrade) return;
 
       if (this.reloading || this.ammo <= 0) return;
 
@@ -344,7 +370,13 @@ class GameScene extends Phaser.Scene {
   }
 
   update() {
-    if (this.gameOver) return;
+    if (this.gameOver || this.choosingUpgrade) return;
+    this.shop.updatePrompt(this.player.sprite);
+    this.updateShopHud();
+    if (Phaser.Input.Keyboard.JustDown(this.interactKey) && this.shop.isInRange(this.player.sprite)) {
+      this.openShop();
+      return;
+    }
 
     if (Phaser.Input.Keyboard.JustDown(this.reloadKey)) {
       this.reload();
@@ -370,7 +402,10 @@ class GameScene extends Phaser.Scene {
     }
 
     direction.normalize();
-    body.setVelocity(direction.x * 160, direction.y * 160);
+    body.setVelocity(
+      direction.x * this.progression.movementSpeed,
+      direction.y * this.progression.movementSpeed,
+    );
 
     this.zombieManager.update();
     this.registerNewZombies();
@@ -409,7 +444,7 @@ class GameScene extends Phaser.Scene {
       this.physics.add.overlap(this.player.sprite, zombie.sprite, () => {
         const now = this.time.now;
 
-        if (!this.gameOver && now - this.lastDamageTime >= 1000) {
+        if (!this.gameOver && !this.choosingUpgrade && now - this.lastDamageTime >= 1000) {
           this.lastDamageTime = now;
           this.takeDamage(zombie.damage);
         }
@@ -422,7 +457,7 @@ class GameScene extends Phaser.Scene {
           ? (obj1 as Phaser.GameObjects.Image)
           : (obj2 as Phaser.GameObjects.Image);
 
-        if (!zombie.sprite.active || !bulletSprite.active) return;
+        if (this.gameOver || this.choosingUpgrade || !zombie.sprite.active || !bulletSprite.active) return;
 
         const impact = this.add.particles(
           bulletSprite.x,
@@ -479,6 +514,8 @@ class GameScene extends Phaser.Scene {
         if (!zombie.sprite.active) {
           this.kills++;
           this.killsText.setText(`ELIMINAÇÕES: ${this.kills}`);
+          this.progression.addXp(ZOMBIE_CONFIG[zombie.type].xp);
+          this.updateProgressionHud();
         }
 
         if (!zombie.sprite.active && Math.random() < 0.05) {
@@ -503,7 +540,7 @@ class GameScene extends Phaser.Scene {
           medkitBody.setImmovable(true);
 
           this.physics.add.overlap(this.player.sprite, medkit, () => {
-            if (this.gameOver || this.health >= 100 || !medkit.active) return;
+            if (this.gameOver || this.choosingUpgrade || this.health >= 100 || !medkit.active) return;
 
             const recovered = Math.min(25, 100 - this.health);
 
@@ -692,7 +729,7 @@ class GameScene extends Phaser.Scene {
     this.sound.play("reload");
     this.ammoText.setText("RECARREGANDO...");
 
-    this.time.delayedCall(1500, () => {
+    this.time.delayedCall(this.progression.reloadDuration, () => {
       if (this.gameOver) {
         this.reloading = false;
         return;
@@ -703,6 +740,51 @@ class GameScene extends Phaser.Scene {
 
       this.ammoText.setText(`MUNIÇÃO: ${this.ammo} / ${this.magazineSize}`);
     });
+  }
+
+  private updateProgressionHud() {
+    const progress = this.progression;
+    this.xpText.setText(progress.isMaxLevel
+      ? `NÍVEL ${progress.level} · MÁXIMO`
+      : `NÍVEL ${progress.level} · XP ${progress.xp}/${progress.xpToNextLevel}`);
+    this.xpBar.setDisplaySize(160 * (progress.isMaxLevel ? 1 : progress.xp / progress.xpToNextLevel), 6);
+    this.updateShopHud();
+  }
+
+  private updateShopHud() {
+    const dx = this.shop.x - this.player.sprite.x;
+    const dy = this.shop.y - this.player.sprite.y;
+    const arrows = ["→", "↘", "↓", "↙", "←", "↖", "↑", "↗"];
+    const direction = arrows[(Math.round(Math.atan2(dy, dx) / (Math.PI / 4)) + 8) % 8];
+    const hint = this.shop.isInRange(this.player.sprite) ? "[E] LOJA" : `LOJA ${direction}`;
+    this.shopText.setText(`PONTOS: ${this.progression.upgradePoints} · ${hint}`);
+    this.shopText.setColor(this.progression.upgradePoints > 0 ? "#d9c58d" : "#a0ad9f");
+  }
+
+  private openShop() {
+    if (this.gameOver || this.choosingUpgrade || !this.shop.isInRange(this.player.sprite)) return;
+    this.choosingUpgrade = true;
+    this.player.body.setVelocity(0, 0);
+    this.scene.launch("UpgradeScene", {
+      getState: () => ({
+        level: this.progression.level,
+        xp: this.progression.xp,
+        xpToNextLevel: this.progression.xpToNextLevel,
+        upgradePoints: this.progression.upgradePoints,
+        choices: this.progression.getChoices(true),
+      }),
+      onBuy: (id: UpgradeId) => {
+        if (!this.choosingUpgrade || this.gameOver) return false;
+        if (!this.progression.buyUpgrade(id)) return false;
+        if (!this.reloading) {
+          this.ammoText.setText(`MUNIÇÃO: ${this.ammo} / ${this.magazineSize}`);
+        }
+        this.updateProgressionHud();
+        return true;
+      },
+      onClose: () => { this.choosingUpgrade = false; },
+    });
+    this.scene.pause();
   }
 }
 

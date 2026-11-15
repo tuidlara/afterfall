@@ -1,6 +1,7 @@
 import Phaser from "phaser";
 import "./style.css";
 import GameScene from "./scenes/GameScene";
+import UpgradeScene from "./scenes/UpgradeScene";
 
 new Phaser.Game({
   type: Phaser.AUTO,
@@ -12,5 +13,5 @@ new Phaser.Game({
     default: "arcade",
     arcade: { debug: false },
   },
-  scene: GameScene,
+  scene: [GameScene, UpgradeScene],
 });
