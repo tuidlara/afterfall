@@ -65,6 +65,10 @@ class GameScene extends Phaser.Scene {
   }
 
   preload() {
+    const loading = this.add.text(480, 300, "CARREGANDO...", {
+      fontFamily: "monospace", fontSize: "20px", color: "#c2b49a",
+    }).setOrigin(0.5);
+    this.load.once("complete", () => loading.destroy());
     this.load.audio("shot", "/audio/shot.mp3");
     this.load.audio("reload", "/audio/reload.mp3");
     this.load.audio("zombie-death", "/audio/zombie-death.mp3");
@@ -708,12 +712,20 @@ class GameScene extends Phaser.Scene {
         this.scene.restart();
       });
 
+      const menuButton = this.add.text(480, 482, "VOLTAR AO MENU", {
+        fontSize: "18px", color: "#b4baa2", padding: { x: 16, y: 8 },
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+      menuButton.on("pointerover", () => menuButton.setColor("#eee0ba"));
+      menuButton.on("pointerout", () => menuButton.setColor("#b4baa2"));
+      menuButton.on("pointerdown", () => this.scene.start("MenuScene"));
+
       this.uiObjects.push(
         overlay,
         deathText,
         waveResult,
         killsResult,
         restartButton,
+        menuButton,
       );
 
       this.cameras.main.ignore([
@@ -722,6 +734,7 @@ class GameScene extends Phaser.Scene {
         waveResult,
         killsResult,
         restartButton,
+        menuButton,
       ]);
     }
   }
