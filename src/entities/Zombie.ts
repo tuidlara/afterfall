@@ -150,6 +150,13 @@ export default class Zombie {
     const sx = this.sprite.x;
     const sy = this.sprite.y;
 
+    const targetDX = target.x - sx;
+    const targetDY = target.y - sy;
+    if (Math.hypot(targetDX, targetDY) > 0.001) {
+      // Os sprites originais apontam para baixo.
+      this.sprite.setRotation(Math.atan2(targetDY, targetDX) - Math.PI / 2);
+    }
+
     ZombiePathfinding.updateGrid(obstacles);
 
     // 1) Define o destino: direto, se enxerga o jogador; senão, pelo caminho

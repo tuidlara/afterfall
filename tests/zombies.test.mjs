@@ -88,6 +88,7 @@ function zombieScene() {
       x, y, key, active: true, tint: null, scaleX: 1, scaleY: 1,
       setDisplaySize(w, h) { this.scaleX = w / 1254; this.scaleY = h / 1254; return this; },
       setDepth() { return this; }, setOrigin() { return this; }, setFillStyle() { return this; },
+      setRotation(angle) { this.rotation = angle; return this; },
       setPosition(x, y) { this.x = x; this.y = y; return this; },
       setTint(color) { this.tint = color; return this; }, clearTint() { this.tint = null; },
       destroy() { this.active = false; }, explode() {},
@@ -97,6 +98,8 @@ function zombieScene() {
     add: { image: object, rectangle: object, particles: object },
     physics: { add: { existing(sprite) {
       sprite.body = {
+        velocity: { x: 0, y: 0 },
+        setVelocity(x, y) { this.velocity = { x, y }; },
         setCollideWorldBounds() {},
         setSize(w, h) { this.width = w * sprite.scaleX; this.height = h * sprite.scaleY; },
         setMaxVelocity(x, y) { this.maxX = x; this.maxY = y; },
@@ -106,11 +109,38 @@ function zombieScene() {
     sound: { play(key) { sounds.push(key); } },
   };
   const Zombie = load("../src/entities/Zombie.ts", {
-    phaser: { default: {} },
-    "./ZombiePathfinding": { default: {} }, "./ZombieTypes": config,
+    phaser: { default: { Math: { Distance: {
+      Between: (ax, ay, bx, by) => Math.hypot(ax - bx, ay - by),
+    } } } },
+    "./ZombiePathfinding": { default: { updateGrid() {}, lineClear() { return true; } } },
+    "./ZombieTypes": config,
   }).default;
   return { scene, timers, sounds, Zombie };
 }
+
+test("all zombie types face the player from every direction without rotating health bars", () => {
+  const { scene, Zombie } = zombieScene();
+  for (const type of ["normal", "runner", "tank"]) {
+    const zombie = new Zombie(scene, 100, 200, type);
+    for (const [dx, dy] of [[0, 100], [0, -100], [100, 0], [-100, 0],
+      [100, 100], [-100, 100], [100, -100], [-100, -100]]) {
+      zombie.follow({ x: 100 + dx, y: 200 + dy });
+      const facing = zombie.sprite.rotation + Math.PI / 2;
+      assert(Math.abs(Math.cos(facing) - dx / Math.hypot(dx, dy)) < 1e-10);
+      assert(Math.abs(Math.sin(facing) - dy / Math.hypot(dx, dy)) < 1e-10);
+      assert(zombie.body.velocity.x * dx + zombie.body.velocity.y * dy > 0);
+      assert.equal(zombie.body.width, type === "tank" ? 36 : 32);
+      zombie.updateHealthBar();
+      for (const bar of zombie.getHealthBarObjects()) {
+        assert.equal(bar.rotation, undefined);
+        assert.equal(bar.y, 200 - (type === "tank" ? 36 : 24));
+      }
+    }
+    const rotation = zombie.sprite.rotation;
+    zombie.follow({ x: 100, y: 200 });
+    assert.equal(zombie.sprite.rotation, rotation);
+  }
+});
 
 test("tank uses its sprite, larger collision, existing stats and restores natural colors after hits", () => {
   const { scene, timers, Zombie } = zombieScene();
