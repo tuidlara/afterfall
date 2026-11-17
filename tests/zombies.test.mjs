@@ -98,7 +98,7 @@ function zombieScene() {
   function object(x, y, key) {
     return {
       x, y, key, active: true, tint: null, scaleX: 1, scaleY: 1,
-      setDisplaySize(w, h) { const size = key === "zombie" ? 512 : 1254; this.scaleX = w / size; this.scaleY = h / size; return this; },
+      setDisplaySize(w, h) { const size = key === "zombie" || key === "zombie-runner" ? 512 : 1254; this.scaleX = w / size; this.scaleY = h / size; return this; },
       setDepth() { return this; }, setOrigin() { return this; }, setFillStyle() { return this; },
       setRotation(angle) { this.rotation = angle; return this; },
       setPosition(x, y) { this.x = x; this.y = y; return this; },
@@ -173,16 +173,52 @@ test("common zombie walk uses six frames, preserves collision and only runs duri
   assert.equal(zombie.sprite.anims.isPlaying, false);
 });
 
-test("walk listeners disappear on death and scene teardown, while runner and tank remain static", () => {
+test("walk listeners disappear on death and scene teardown, while tank remains static", () => {
   const { scene, Zombie, handlers } = zombieScene();
   const zombie = new Zombie(scene, 100, 200);
   const second = new Zombie(scene, 300, 200);
-  for (const type of ["runner", "tank"]) new Zombie(scene, 400, 200, type);
-  assert.equal(handlers.length, 2);
+  const runner = new Zombie(scene, 400, 200, "runner");
+  new Zombie(scene, 500, 200, "tank");
+  assert.equal(handlers.length, 3);
   zombie.takeDamage(3);
+  assert.equal(handlers.length, 2);
+  runner.takeDamage(2);
   assert.equal(handlers.length, 1);
   second.sprite.destroy();
   assert.equal(handlers.length, 0);
+});
+
+test("runner has its own faster cycle, keeps its stats and stops animating at walls", () => {
+  const { scene, Zombie, animations } = zombieScene();
+  const png = readFileSync(new URL("../public/assets/zombie-runner-walk.png", import.meta.url));
+  assert.equal(png.readUInt32BE(16), Zombie.FRAME_SIZE * 3);
+  assert.equal(png.readUInt32BE(20), Zombie.FRAME_SIZE * 2);
+  const runner = new Zombie(scene, 100, 200, "runner");
+  new Zombie(scene, 400, 200, "runner");
+  new Zombie(scene, 500, 200, "normal");
+  assert.equal(animations.size, 2);
+  assert.equal(animations.get("zombie-runner-walk").frameRate, 10);
+  assert.equal(animations.get("zombie-walk").frameRate, 6);
+  assert.deepEqual(Array.from(animations.get("zombie-runner-walk").frames), [0, 1, 2, 3, 4, 5]);
+  assert.equal(runner.body.width, 32);
+  assert.equal(runner.body.height, 32);
+  assert.equal(runner.speed, 120);
+  assert.equal(runner.damage, 15);
+  assert.equal(runner.maxHealth, 2);
+  const diagonal = 120 / Math.sqrt(2);
+  runner.body.setVelocity(diagonal, diagonal);
+  runner.sprite.x += diagonal / 60;
+  runner.sprite.y += diagonal / 60;
+  scene.events.emit("postupdate", 0, 1000 / 60);
+  assert.equal(runner.sprite.animation.key, "zombie-runner-walk");
+  assert(Math.abs(runner.sprite.anims.timeScale - 1) < 1e-10);
+  runner.sprite.x += diagonal / 120;
+  runner.sprite.y += diagonal / 120;
+  scene.events.emit("postupdate", 16, 1000 / 60);
+  assert(Math.abs(runner.sprite.anims.timeScale - 0.5) < 1e-10);
+  scene.events.emit("postupdate", 32, 1000 / 60);
+  assert.equal(runner.sprite.anims.isPlaying, false);
+  assert.equal(runner.sprite.frame, 0);
 });
 
 test("all zombie types face the player from every direction without rotating health bars", () => {

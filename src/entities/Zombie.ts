@@ -35,6 +35,7 @@ export default class Zombie {
   private lastAnimationX: number;
   private lastAnimationY: number;
   private readonly walkStartFrame = Math.floor(Math.random() * 6);
+  private readonly walkAnimationKey: string;
 
   constructor(
     scene: Phaser.Scene,
@@ -44,6 +45,7 @@ export default class Zombie {
   ) {
     this.scene = scene;
     this.type = type;
+    this.walkAnimationKey = type === "runner" ? "zombie-runner-walk" : "zombie-walk";
 
     const config = ZOMBIE_CONFIG[type];
 
@@ -74,13 +76,13 @@ export default class Zombie {
     this.body.setSize(config.bodySize / this.sprite.scaleX, config.bodySize / this.sprite.scaleY);
     this.body.setMaxVelocity(this.speed, this.speed);
 
-    if (type === "normal") {
+    if (type !== "tank") {
       scene.textures.get(config.texture).setFilter(Phaser.Textures.FilterMode.NEAREST);
-      if (!scene.anims.exists("zombie-walk")) {
+      if (!scene.anims.exists(this.walkAnimationKey)) {
         scene.anims.create({
-          key: "zombie-walk",
+          key: this.walkAnimationKey,
           frames: scene.anims.generateFrameNumbers(config.texture, { start: 0, end: 5 }),
-          frameRate: 6,
+          frameRate: type === "runner" ? 10 : 6,
           repeat: -1,
         });
       }
@@ -174,7 +176,7 @@ export default class Zombie {
     }
 
     this.sprite.anims.timeScale = Phaser.Math.Clamp(speed / this.speed, 0.5, 1.3);
-    this.sprite.play({ key: "zombie-walk", startFrame: this.walkStartFrame }, true);
+    this.sprite.play({ key: this.walkAnimationKey, startFrame: this.walkStartFrame }, true);
   }
 
   /**

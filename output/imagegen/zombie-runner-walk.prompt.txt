@@ -1,0 +1,18 @@
+Tool: built-in image_gen, transparent background.
+Reference: public/assets/zombie-runner.png (identity, palette, overhead view).
+Final asset: public/assets/zombie-runner-walk.png.
+
+Create a 1536x1024 transparent pixel-art spritesheet for AFTERFALL, 3 columns
+by 2 rows of 512x512 cells. Six consecutive south-facing aggressive run phases:
+left contact, left compression, passing, right contact, right compression,
+opposite passing. Same thin bald gray-olive runner, pale yellow eyes,
+charcoal torn sleeveless clothes, muted red wounds, claw hands as reference.
+Short foreshortened legs, lively opposite arm swings, slight forward lean.
+Keep head and torso registered across cells, stable dimensions, large transparent
+margins, roughly 250x300 pixel character inside each cell. Crisp pixel edges,
+dark muted palette. No text, grid, shadows, glows, weapons or backgrounds.
+
+Final refinement: preserve canvas and phases; reduce characters to 83% around
+each cell center. Align bald head center to local (256,235) in every frame;
+silhouettes approximately x130..390 y115..435. Keep south-facing heads,
+alternating feet, short legs and transparent cutouts with no halos.
