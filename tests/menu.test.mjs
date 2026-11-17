@@ -27,11 +27,13 @@ function menu() {
   let fades = 0;
   const MenuScene = load("../src/scenes/MenuScene.ts", { phaser: { default: {
     Scene: class {}, Cameras: { Scene2D: { Events: { FADE_OUT_COMPLETE: "fadecomplete" } } },
+    Math: { Vector2: class { constructor(x, y) { this.x = x; this.y = y; } } },
   } } }).default;
   function object(x, y, value) {
     const result = {
       x, y, value, visible: true, handlers: {}, depth: 0,
-      fillStyle() { return this; }, fillRect() { return this; },
+      fillStyle() { return this; }, fillRect() { return this; }, fillPoints() { return this; },
+      setColor() { return this; },
       setFontStyle() { return this; }, setLineSpacing() { return this; }, setAlign() { return this; },
       setOrigin(x, y) { this.origin = [x, y]; return this; },
       setVisible(value) { this.visible = value; return this; }, setDepth(value) { this.depth = value; return this; },
