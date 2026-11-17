@@ -150,8 +150,16 @@ test("game over offers return to menu while preserving direct restart", () => {
   game.physics = { pause() {} };
   game.zombieManager = { getCurrentWave: () => 5 };
   game.cameras = { main: { ignore: (objects) => { ignored = objects; } } };
+  const hud = object();
+  game.uiObjects = [hud];
+  let hiddenHud;
+  game.uiCamera = { ignore: (objects) => { hiddenHud = [...objects]; } };
   game.scene = { start: (key) => { nextScene = key; }, restart: () => { restarts++; } };
   game.takeDamage(100);
+  assert.deepEqual(hiddenHud, [hud]);
+  assert(texts.some((text) => text.value === "ONDA ALCANÇADA"));
+  assert(texts.some((text) => text.value === "05"));
+  assert(texts.some((text) => text.value === "ELIMINAÇÕES"));
   const back = texts.find((text) => text.value === "VOLTAR AO MENU");
   assert(ignored.includes(back));
   back.handlers.pointerdown();

@@ -671,84 +671,70 @@ class GameScene extends Phaser.Scene {
       this.setAimCursor(false);
       this.player.body.setVelocity(0, 0);
       this.physics.pause();
+      this.uiCamera.ignore(this.uiObjects);
 
-      const overlay = this.add.rectangle(480, 300, 960, 600, 0x000000, 0.82);
+      const overlay = this.add.rectangle(480, 300, 960, 600, 0x080e10, 0.88);
+      const topEdge = this.add.rectangle(480, 18, 960, 36, 0x080e10, 0.7);
+      const bottomEdge = this.add.rectangle(480, 570, 960, 60, 0x080e10, 0.7);
+      const text = (x: number, y: number, value: string, size: number, color: string) =>
+        this.add.text(x, y, value, {
+          fontFamily: "monospace", fontSize: `${size}px`, color,
+        }).setOrigin(0.5);
+      const attemptLabel = text(480, 112, "FIM DA TENTATIVA", 11, "#7f8778");
 
       const deathText = this.add
-        .text(480, 185, "VOCÊ MORREU", {
-          fontSize: "52px",
-          color: "#A64B3C",
-          fontStyle: "bold",
-          stroke: "#000000",
-          strokeThickness: 5,
+        .text(480, 176, "VOCÊ MORREU", {
+          fontFamily: "Impact, 'Arial Black', sans-serif",
+          fontSize: "76px",
+          color: "#aa5742",
+          stroke: "#090f11",
+          strokeThickness: 2,
         })
         .setOrigin(0.5);
 
-      const waveResult = this.add
-        .text(
-          480,
-          265,
-          `SOBREVIVEU ATÉ A ONDA ${this.zombieManager.getCurrentWave()}`,
-          {
-            fontSize: "22px",
-            color: "#C2B49A",
-          },
-        )
-        .setOrigin(0.5);
-
-      const killsResult = this.add
-        .text(480, 315, `ZUMBIS ELIMINADOS: ${this.kills}`, {
-          fontSize: "22px",
-          color: "#D6C9AD",
-        })
-        .setOrigin(0.5);
+      const divider = this.add.rectangle(480, 292, 1, 66, 0x4a5145, 0.55);
+      const waveLabel = text(370, 263, "ONDA ALCANÇADA", 11, "#868c7b");
+      const waveResult = text(370, 304,
+        String(this.zombieManager.getCurrentWave()).padStart(2, "0"), 40, "#c6bea6");
+      const killsLabel = text(590, 263, "ELIMINAÇÕES", 11, "#868c7b");
+      const killsResult = text(590, 304, String(this.kills).padStart(2, "0"), 40, "#c6bea6");
+      const rule = this.add.rectangle(480, 362, 320, 1, 0x4a5145, 0.4);
 
       const restartButton = this.add
-        .text(480, 410, "REINICIAR PARTIDA", {
-          fontSize: "24px",
-          color: "#C2B49A",
-          backgroundColor: "#292B29",
-          padding: { x: 24, y: 14 },
+        .text(480, 414, "REINICIAR PARTIDA", {
+          fontFamily: "monospace",
+          fontSize: "22px",
+          color: "#c6bea6",
+          padding: { x: 22, y: 12 },
         })
         .setOrigin(0.5)
         .setInteractive({ useHandCursor: true });
 
       restartButton.on("pointerover", () => {
-        restartButton.setStyle({ backgroundColor: "#454841" });
+        restartButton.setColor("#e6d8b4");
       });
 
       restartButton.on("pointerout", () => {
-        restartButton.setStyle({ backgroundColor: "#292B29" });
+        restartButton.setColor("#c6bea6");
       });
 
       restartButton.on("pointerdown", () => {
         this.scene.restart();
       });
 
-      const menuButton = this.add.text(480, 482, "VOLTAR AO MENU", {
-        fontSize: "18px", color: "#b4baa2", padding: { x: 16, y: 8 },
+      const menuButton = this.add.text(480, 468, "VOLTAR AO MENU", {
+        fontFamily: "monospace", fontSize: "15px", color: "#8c9582", padding: { x: 16, y: 10 },
       }).setOrigin(0.5).setInteractive({ useHandCursor: true });
       menuButton.on("pointerover", () => menuButton.setColor("#eee0ba"));
-      menuButton.on("pointerout", () => menuButton.setColor("#b4baa2"));
+      menuButton.on("pointerout", () => menuButton.setColor("#8c9582"));
       menuButton.on("pointerdown", () => this.scene.start("MenuScene"));
 
-      this.uiObjects.push(
-        overlay,
-        deathText,
-        waveResult,
-        killsResult,
-        restartButton,
-        menuButton,
-      );
-
-      this.cameras.main.ignore([
-        overlay,
-        deathText,
-        waveResult,
-        killsResult,
-        restartButton,
-        menuButton,
-      ]);
+      const gameOverObjects = [
+        overlay, topEdge, bottomEdge, attemptLabel, deathText, divider,
+        waveLabel, waveResult, killsLabel, killsResult, rule, restartButton, menuButton,
+      ];
+      this.uiObjects.push(...gameOverObjects);
+      this.cameras.main.ignore(gameOverObjects);
     }
   }
 
