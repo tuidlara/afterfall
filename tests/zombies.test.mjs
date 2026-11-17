@@ -98,7 +98,7 @@ function zombieScene() {
   function object(x, y, key) {
     return {
       x, y, key, active: true, tint: null, scaleX: 1, scaleY: 1,
-      setDisplaySize(w, h) { const size = key === "zombie" || key === "zombie-runner" ? 512 : 1254; this.scaleX = w / size; this.scaleY = h / size; return this; },
+      setDisplaySize(w, h) { this.scaleX = w / 512; this.scaleY = h / 512; return this; },
       setDepth() { return this; }, setOrigin() { return this; }, setFillStyle() { return this; },
       setRotation(angle) { this.rotation = angle; return this; },
       setPosition(x, y) { this.x = x; this.y = y; return this; },
@@ -173,16 +173,18 @@ test("common zombie walk uses six frames, preserves collision and only runs duri
   assert.equal(zombie.sprite.anims.isPlaying, false);
 });
 
-test("walk listeners disappear on death and scene teardown, while tank remains static", () => {
+test("walk listeners for every type disappear on death and scene teardown", () => {
   const { scene, Zombie, handlers } = zombieScene();
   const zombie = new Zombie(scene, 100, 200);
   const second = new Zombie(scene, 300, 200);
   const runner = new Zombie(scene, 400, 200, "runner");
-  new Zombie(scene, 500, 200, "tank");
-  assert.equal(handlers.length, 3);
+  const tank = new Zombie(scene, 500, 200, "tank");
+  assert.equal(handlers.length, 4);
   zombie.takeDamage(3);
-  assert.equal(handlers.length, 2);
+  assert.equal(handlers.length, 3);
   runner.takeDamage(2);
+  assert.equal(handlers.length, 2);
+  tank.takeDamage(7);
   assert.equal(handlers.length, 1);
   second.sprite.destroy();
   assert.equal(handlers.length, 0);
@@ -263,7 +265,7 @@ test("all zombies settle in contact instead of crossing a stationary player and 
       assert(distance <= zombie.body.width / 2);
       assert.equal(zombie.body.velocity.x, 0);
       assert.equal(zombie.body.velocity.y, 0);
-      if (type !== "tank") assert.equal(zombie.sprite.anims.isPlaying, false);
+      assert.equal(zombie.sprite.anims.isPlaying, false);
       for (let frame = 0; frame < 120; frame++) zombie.follow(target);
       assert.equal(zombie.sprite.x, x);
       assert.equal(zombie.sprite.y, y);
@@ -282,13 +284,45 @@ test("all zombies settle in contact instead of crossing a stationary player and 
   }
 });
 
+test("tank walks with a separate slow cycle and stops at walls or contact without changing its facing", () => {
+  const { scene, Zombie, animations } = zombieScene();
+  const png = readFileSync(new URL("../public/assets/zombie-tank-walk.png", import.meta.url));
+  assert.equal(png.readUInt32BE(16), Zombie.FRAME_SIZE * 3);
+  assert.equal(png.readUInt32BE(20), Zombie.FRAME_SIZE * 2);
+  const tank = new Zombie(scene, 100, 200, "tank");
+  new Zombie(scene, 400, 200, "tank");
+  assert.equal(animations.size, 1);
+  const cycle = animations.get("zombie-tank-walk");
+  assert.equal(cycle.frameRate, 4);
+  assert.equal(cycle.repeat, -1);
+  assert.deepEqual(Array.from(cycle.frames), [0, 1, 2, 3, 4, 5]);
+  tank.follow({ x: 400, y: 500 });
+  const rotation = tank.sprite.rotation;
+  const diagonal = 70 / Math.sqrt(2);
+  tank.body.setVelocity(diagonal, diagonal);
+  tank.sprite.x += diagonal / 60;
+  tank.sprite.y += diagonal / 60;
+  scene.events.emit("postupdate", 0, 1000 / 60);
+  assert.equal(tank.sprite.animation.key, "zombie-tank-walk");
+  assert.equal(tank.sprite.anims.isPlaying, true);
+  assert(Math.abs(tank.sprite.anims.timeScale - 1) < 1e-10);
+  assert.equal(tank.sprite.rotation, rotation);
+  scene.events.emit("postupdate", 16, 1000 / 60);
+  assert.equal(tank.sprite.anims.isPlaying, false);
+  assert.equal(tank.sprite.frame, 0);
+  tank.sprite.x += 1;
+  tank.body.setVelocity(0, 0);
+  scene.events.emit("postupdate", 32, 1000 / 60);
+  assert.equal(tank.sprite.anims.isPlaying, false);
+});
+
 test("tank uses its sprite, larger collision, existing stats and restores natural colors after hits", () => {
   const { scene, timers, Zombie } = zombieScene();
   const tank = new Zombie(scene, 100, 200, "tank");
   assert.equal(tank.sprite.key, "zombie-tank");
   assert.equal(tank.body.width, 36);
   assert.equal(tank.body.height, 36);
-  assert.equal(tank.speed, 55);
+  assert.equal(tank.speed, 70);
   assert.equal(tank.damage, 30);
   assert.equal(tank.maxHealth, 7);
   assert.equal(tank.sprite.tint, null);

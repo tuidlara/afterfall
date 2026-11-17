@@ -26,7 +26,7 @@ export const ZOMBIE_CONFIG = {
     displaySize: 84,
     bodySize: 36,
     health: 7,
-    speed: 55,
+    speed: 70,
     damage: 30,
     xp: 12,
     tint: 0x7a8b68,

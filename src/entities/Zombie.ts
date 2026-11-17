@@ -45,9 +45,9 @@ export default class Zombie {
   ) {
     this.scene = scene;
     this.type = type;
-    this.walkAnimationKey = type === "runner" ? "zombie-runner-walk" : "zombie-walk";
 
     const config = ZOMBIE_CONFIG[type];
+    this.walkAnimationKey = `${config.texture}-walk`;
 
     this.speed = config.speed;
     this.maxHealth = config.health;
@@ -76,21 +76,19 @@ export default class Zombie {
     this.body.setSize(config.bodySize / this.sprite.scaleX, config.bodySize / this.sprite.scaleY);
     this.body.setMaxVelocity(this.speed, this.speed);
 
-    if (type !== "tank") {
-      scene.textures.get(config.texture).setFilter(Phaser.Textures.FilterMode.NEAREST);
-      if (!scene.anims.exists(this.walkAnimationKey)) {
-        scene.anims.create({
-          key: this.walkAnimationKey,
-          frames: scene.anims.generateFrameNumbers(config.texture, { start: 0, end: 5 }),
-          frameRate: type === "runner" ? 10 : 6,
-          repeat: -1,
-        });
-      }
-      scene.events.on(Phaser.Scenes.Events.POST_UPDATE, this.updateWalkAnimation, this);
-      this.sprite.once(Phaser.GameObjects.Events.DESTROY, () => {
-        scene.events.off(Phaser.Scenes.Events.POST_UPDATE, this.updateWalkAnimation, this);
+    scene.textures.get(config.texture).setFilter(Phaser.Textures.FilterMode.NEAREST);
+    if (!scene.anims.exists(this.walkAnimationKey)) {
+      scene.anims.create({
+        key: this.walkAnimationKey,
+        frames: scene.anims.generateFrameNumbers(config.texture, { start: 0, end: 5 }),
+        frameRate: type === "tank" ? 4 : type === "runner" ? 10 : 6,
+        repeat: -1,
       });
     }
+    scene.events.on(Phaser.Scenes.Events.POST_UPDATE, this.updateWalkAnimation, this);
+    this.sprite.once(Phaser.GameObjects.Events.DESTROY, () => {
+      scene.events.off(Phaser.Scenes.Events.POST_UPDATE, this.updateWalkAnimation, this);
+    });
 
     this.lastCheckX = x;
     this.lastCheckY = y;

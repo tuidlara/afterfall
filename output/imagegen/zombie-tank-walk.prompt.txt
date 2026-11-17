@@ -1,0 +1,11 @@
+Tool: built-in image_gen, transparent background.
+Reference: public/assets/zombie-tank.png.
+Final asset: public/assets/zombie-tank-walk.png.
+
+Use case: stylized-concept.
+Asset type: six-frame walk spritesheet for AFTERFALL, 2D overhead pixel-art zombie survival game.
+Reference image: exact tank zombie identity, overhead viewpoint and palette. Preserve huge broad hunched shoulders, enormous muscular arms, small bald olive-gray head, pale yellow eyes, ripped charcoal purple shirt, dark brown trousers, dark boots, muted red wounds. Same massive character, not common or runner.
+Produce ONE transparent PNG exactly1536x1024. Strict3 columns x2 rows, six equal512x512 cells, no visible grid, labels, text or background.
+In every cell zombie faces DOWN/SOUTH in same overhead view as reference. Stable head center local(256,210), chest/pelvis anchored around local(256,270). Same scale and registration in every cell. Visible silhouette roughly360 pixels wide by380 high, within x75..437 y78..458 in each cell. Keep clear transparent margins. Crisp pixel-art block shapes, dark outline, restrained muted colors. Short foreshortened legs, no elongated trailing legs.
+Reading-order frames0..5 form ONE seamless slow heavy walking cycle:0 neutral/contact,1 left weight shift,2 short left step,3 opposite contact,4 right weight shift,5 short right step. Clearly distinct alternating feet. Very restrained arm swing and slight shoulder weight shift, conveys a heavy lumbering tank. No jumping, body translation, torso twisting or turning heads. Head stays at exactly same coordinates throughout, shoulder sway only a few pixels. Match original silhouette and color.
+Actual transparent alpha, no floor, baked shadows, halos, glows, vignette, backdrop, particles or props. No attack animation.
