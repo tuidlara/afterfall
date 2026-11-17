@@ -281,6 +281,7 @@ function shopMenu(run) {
     const result = {
       x, y, value, handlers: {}, setOrigin() { return this; }, setStrokeStyle() { return this; },
       setFillStyle() { return this; }, setInteractive() { return this; },
+      setVisible(value) { this.visible = value; return this; }, setColor() { return this; },
       setText(value) { this.value = value; return this; }, setAlpha(value) { this.alpha = value; return this; },
       setWordWrapWidth() { return this; },
       on(name, callback) { this.handlers[name] = callback; return this; },
@@ -308,15 +309,15 @@ test("shop requires selection plus confirmation and prevents repeated purchase f
   ui.keys["keydown-ONE"]({ repeat: true });
   ui.keys["keydown-ENTER"]({ repeat: false });
   assert.equal(run.magazineSize, 12);
-  ui.click(196, 290, 2);
-  ui.click(655, 485);
+  ui.click(285, 228, 2);
+  ui.click(730, 493);
   assert.equal(run.magazineSize, 12);
-  ui.click(196, 290);
+  ui.click(285, 228);
   assert.equal(run.magazineSize, 12);
-  ui.click(655, 485);
+  ui.click(730, 493);
   assert.equal(run.magazineSize, 14);
   assert.equal(run.upgradePoints, 1);
-  ui.click(655, 485);
+  ui.click(730, 493);
   assert.equal(run.magazineSize, 14);
   assert.equal(run.upgradePoints, 1);
   assert.equal(ui.resumed, 0);
@@ -332,10 +333,10 @@ test("preview without points never grants an upgrade and displays missing XP", (
   run.addXp(25);
   const ui = shopMenu(run);
   ui.keys["keydown-ONE"]({ repeat: false });
-  ui.click(655, 485);
+  ui.click(730, 493);
   assert.equal(run.magazineSize, 12);
   assert.equal(run.upgradePoints, 0);
   assert(ui.objects.some((object) => String(object.value).includes("Faltam 125 XP")));
-  ui.click(280, 485);
+  ui.click(230, 493);
   assert.equal(ui.closed, 1);
 });
