@@ -245,6 +245,43 @@ test("all zombie types face the player from every direction without rotating hea
   }
 });
 
+test("all zombies settle in contact instead of crossing a stationary player and resume chasing on escape", () => {
+  const { scene, Zombie } = zombieScene();
+  for (const type of ["normal", "runner", "tank"]) {
+    for (const [dx, dy] of [[100, 0], [-100, 0], [0, 100], [0, -100], [100, 100]]) {
+      const zombie = new Zombie(scene, 500 + dx, 500 + dy, type);
+      const target = { x: 500, y: 500 };
+      for (let frame = 0; frame < 600; frame++) {
+        zombie.follow(target);
+        zombie.sprite.x += zombie.body.velocity.x / 60;
+        zombie.sprite.y += zombie.body.velocity.y / 60;
+        scene.events.emit("postupdate", frame * 1000 / 60, 1000 / 60);
+      }
+      const { x, y, rotation } = zombie.sprite;
+      const distance = Math.hypot(x - target.x, y - target.y);
+      assert(distance > 0);
+      assert(distance <= zombie.body.width / 2);
+      assert.equal(zombie.body.velocity.x, 0);
+      assert.equal(zombie.body.velocity.y, 0);
+      if (type !== "tank") assert.equal(zombie.sprite.anims.isPlaying, false);
+      for (let frame = 0; frame < 120; frame++) zombie.follow(target);
+      assert.equal(zombie.sprite.x, x);
+      assert.equal(zombie.sprite.y, y);
+      assert.equal(zombie.sprite.rotation, rotation);
+      target.x += 100;
+      zombie.follow(target);
+      assert(zombie.body.velocity.x > 0);
+      zombie.sprite.destroy();
+    }
+    const overlapping = new Zombie(scene, 500, 500, type);
+    overlapping.body.setVelocity(50, -50);
+    overlapping.follow({ x: 500, y: 500 });
+    assert.equal(overlapping.body.velocity.x, 0);
+    assert.equal(overlapping.body.velocity.y, 0);
+    overlapping.sprite.destroy();
+  }
+});
+
 test("tank uses its sprite, larger collision, existing stats and restores natural colors after hits", () => {
   const { scene, timers, Zombie } = zombieScene();
   const tank = new Zombie(scene, 100, 200, "tank");

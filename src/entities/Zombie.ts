@@ -215,6 +215,14 @@ export default class Zombie {
       this.type === "tank" ? 18 : Zombie.LOS_PADDING,
     );
 
+    // Para dentro do contato, sem tentar atravessar o centro do jogador.
+    const contactDistance = Math.min(this.body.width, this.body.height) / 2;
+    if (hasLineOfSight && Math.hypot(targetDX, targetDY) <= contactDistance) {
+      this.path = [];
+      this.body.setVelocity(0, 0);
+      return;
+    }
+
     if (hasLineOfSight) {
       this.path = [];
     } else {
