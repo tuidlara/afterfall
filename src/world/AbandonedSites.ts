@@ -156,26 +156,71 @@ export default class AbandonedSites {
   }
 
   private camp(x: number, y: number) {
-    this.ground.fillStyle(0x454437, 0.65);
-    this.ground.fillRect(x - 85, y - 55, 170, 110);
-    this.ground.fillStyle(0x1b2020);
-    this.ground.fillRect(x - 16, y - 12, 32, 24);
-    for (const [dx, dy] of [[-16, -12], [12, -12], [-16, 10], [12, 10]]) {
-      this.ground.fillStyle(0x777263);
-      this.ground.fillRect(x + dx, y + dy, 6, 5);
+    const rect = (px: number, py: number, w: number, h: number, color: number) => {
+      this.ground.fillStyle(color);
+      this.ground.fillRect(x + px, y + py, w, h);
+    };
+    const oval = (px: number, py: number, w: number, h: number, color: number) => {
+      for (let row = -h / 2; row < h / 2; row += 2) {
+        const half = Math.floor(w / 4 * Math.sqrt(Math.max(0, 1 - (row / (h / 2)) ** 2))) * 2;
+        rect(px - half, py + row, half * 2, 2, color);
+      }
+    };
+    oval(0, 4, 181, 122, 0x3b3d2f);
+    oval(-61, 21, 79, 83, 0x414333);
+    oval(43, -22, 103, 72, 0x414333);
+    rect(-71, -44, 34, 64, 0x263c33);
+    rect(-69, -42, 30, 60, 0x69775a);
+    for (let row = -39; row < 17; row += 5) rect(-68, row, 28, 1, 0x485e47);
+    oval(-54, -33, 27, 24, 0x2d4339);
+    oval(-54, -34, 22, 18, 0x90a087);
+    oval(-54, -35, 15, 11, 0xc2b89a);
+    rect(-66, -29, 24, 39, 0x49685a);
+    rect(-64, -27, 20, 33, 0x78947a);
+    rect(-44, -27, 2, 37, 0xb1b28f);
+    rect(-46, -17, 2, 5, 0xd0c09b);
+    for (let row = -21; row < 7; row += 9) {
+      rect(-63, row, 17, 2, 0x4a6d58);
+      rect(-61, row - 1, 12, 1, 0x9baa89);
     }
-    this.ground.fillStyle(0x554330);
-    this.ground.fillRect(x - 10, y - 2, 20, 4);
-    this.ground.fillRect(x - 2, y - 9, 4, 18);
-    this.ground.fillStyle(0x5d6654);
-    this.ground.fillRect(x - 65, y - 38, 22, 44);
-    this.ground.fillStyle(0x88816a);
-    this.ground.fillRect(x - 63, y - 36, 18, 10);
+    rect(-63, 7, 17, 6, 0x5b7c61);
+    rect(-61, 7, 13, 2, 0xa1ad87);
+    oval(0, 1, 37, 35, 0x26332a);
+    oval(0, 0, 27, 25, 0x626555);
+    oval(0, 0, 20, 20, 0x303c32);
+    for (const [px, py] of [[-17, -4], [-11, -14], [1, -16], [12, -10], [15, 2], [8, 12], [-5, 14], [-16, 7]]) {
+      rect(px!, py!, 7, 6, 0x737d68);
+      rect(px! + 1, py!, 4, 2, 0xb0ac8c);
+    }
+    const log = (points: number[][], color: number) => {
+      this.ground.fillStyle(color);
+      this.ground.fillPoints(points.map(([px, py]) => new Phaser.Math.Vector2(x + px!, y + py!)), true);
+    };
+    log([[-11, -5], [-8, -9], [11, 6], [8, 10]], 0x6c5740);
+    log([[-7, -3], [-5, -5], [8, 5], [5, 7]], 0x26352b);
+    log([[-9, 7], [-12, 3], [8, -8], [11, -4]], 0x4c4d37);
+    rect(-10, 4, 3, 2, 0x8d8769);
+    rect(4, 3, 2, 2, 0x806547);
+    oval(32, 6, 16, 13, 0x25372d);
+    oval(31, 4, 14, 12, 0x899884);
+    oval(31, 3, 10, 8, 0x3c5544);
+    rect(25, -4, 3, 5, 0xb0b69a);
+    rect(27, -6, 9, 2, 0xb0b69a);
+    rect(35, -4, 2, 5, 0xb0b69a);
+    rect(29, 1, 6, 2, 0xc2bea0);
+    oval(-25, 38, 23, 18, 0x283d31);
+    rect(-34, 32, 18, 15, 0x8b7552);
+    rect(-31, 30, 13, 4, 0xb49a6a);
+    rect(-32, 38, 14, 6, 0x6a6241);
+    rect(-30, 36, 2, 10, 0xc4ae7d);
+    rect(-20, 36, 2, 10, 0xc4ae7d);
+    rect(30, 32, 6, 8, 0xa2aa8d);
+    rect(31, 31, 4, 2, 0xd1c6a2);
+    rect(31, 36, 4, 2, 0x6a7d60);
     this.addProp(new UrbanDebris(this.scene, x + 64, y - 28, "crate"));
     this.addProp(new UrbanDebris(this.scene, x + 70, y + 30, "barrel"));
     this.vegetation(x - 80, y + 45, 95, 60);
-    this.ground.fillStyle(0x774c3b, 0.8);
-    this.ground.fillRect(x + 8, y + 40, 18, 5);
+    rect(7, 39, 15, 4, 0x684e37);
     this.ground.fillStyle(0xaca18a, 0.65);
     for (let i = 0; i < 12; i++) {
       this.ground.fillRect(x + Phaser.Math.Between(-90, 90), y + Phaser.Math.Between(-60, 60), 4, 3);

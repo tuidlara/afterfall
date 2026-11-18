@@ -2,6 +2,8 @@ import Phaser from "phaser";
 import Building from "./Building";
 import { WORLD_SIZE } from "./WorldConfig";
 import AbandonedSites from "./AbandonedSites";
+import DistrictDetails from "./DistrictDetails";
+import CityLandmarks from "./CityLandmarks";
 
 class GameMap {
   private scene: Phaser.Scene;
@@ -14,6 +16,8 @@ class GameMap {
   private surfaceTexture!: Phaser.GameObjects.TileSprite;
   private buildings: Building[] = [];
   private abandonedSites!: AbandonedSites;
+  private districtDetails!: DistrictDetails;
+  private cityLandmarks!: CityLandmarks;
 
   constructor(scene: Phaser.Scene) {
     this.scene = scene;
@@ -44,6 +48,8 @@ class GameMap {
 
     this.createAbandonedBlock();
     this.abandonedSites = new AbandonedSites(this.scene);
+    this.districtDetails = new DistrictDetails(this.scene);
+    this.cityLandmarks = new CityLandmarks(this.scene);
 
     this.cracks = this.scene.add.graphics();
     this.cracks.setDepth(-2);
@@ -200,12 +206,6 @@ class GameMap {
       streets.fillRect(590 + i * 16, 866 + (i % 3) * 4, 12, 6);
     }
 
-    streets.fillStyle(0x303c2b);
-    streets.fillRect(1460, 2380, 460, 470);
-    streets.fillStyle(0x62604e);
-    streets.fillRect(1650, 2320, 64, 580);
-    streets.fillRect(1460, 2590, 460, 56);
-
     streets.fillStyle(0x353a39);
     streets.fillRect(2340, 2320, 580, 540);
     streets.fillStyle(0x8a8165, 0.55);
@@ -218,16 +218,15 @@ class GameMap {
       new Building(this.scene, 740, 750, 240, 200, "MERCADO", 0x555d3d),
       new Building(this.scene, 1260, 750, 260, 200, "OFICINA", 0x68513b, "workshop"),
       new Building(this.scene, 740, 1210, 240, 180, "+ CLINICA", 0x68433d, "medical"),
-      new Building(this.scene, 2440, 520, 200, 160, "CASA 01", 0x575d49, "house"),
-      new Building(this.scene, 2780, 520, 200, 160, "CASA 02", 0x625748, "house"),
-      new Building(this.scene, 2440, 780, 200, 160, "CASA 03", 0x625748, "house"),
-      new Building(this.scene, 2780, 780, 200, 160, "CASA 04", 0x575d49, "house"),
+      new Building(this.scene, 2460, 440, 210, 170, "17", 0x575d49, "house"),
+      new Building(this.scene, 2795, 570, 250, 190, "23", 0x625748, "house"),
+      new Building(this.scene, 2450, 770, 190, 150, "08", 0x625748, "house"),
       new Building(this.scene, 2510, 1390, 300, 200, "LAVANDERIA", 0x485b5a, "laundry"),
       new Building(this.scene, 2750, 1800, 260, 220, "MERCADINHO", 0x555d3d),
-      new Building(this.scene, 650, 2530, 300, 240, "FARMACIA", 0x68433d, "medical"),
-      new Building(this.scene, 1270, 2550, 240, 260, "FERRAGENS", 0x68513b, "workshop"),
-      new Building(this.scene, 2460, 2550, 240, 300, "DEPOSITO A", 0x68513b, "warehouse"),
-      new Building(this.scene, 2800, 2550, 240, 300, "DEPOSITO B", 0x515c60, "warehouse"),
+      new Building(this.scene, 620, 2535, 310, 220, "FARMACIA", 0x68433d, "medical"),
+      new Building(this.scene, 1280, 2520, 220, 270, "FERRAGENS", 0x68513b, "workshop"),
+      new Building(this.scene, 2450, 2520, 220, 270, "DEPOSITO A", 0x68513b, "warehouse"),
+      new Building(this.scene, 2800, 2610, 240, 340, "DEPOSITO B", 0x515c60, "warehouse"),
     ];
   }
 
@@ -235,6 +234,8 @@ class GameMap {
     return [
       ...this.buildings.map((building) => building.obstacle),
       ...this.abandonedSites.obstacles,
+      ...this.districtDetails.obstacles,
+      ...this.cityLandmarks.obstacles,
     ];
   }
 
@@ -243,6 +244,8 @@ class GameMap {
       this.ground, this.cracks, this.debris, this.grass, this.streets, this.surfaceTexture,
       ...this.buildings.flatMap((building) => building.visuals),
       ...this.abandonedSites.visuals,
+      ...this.districtDetails.visuals,
+      ...this.cityLandmarks.visuals,
     ];
   }
 }

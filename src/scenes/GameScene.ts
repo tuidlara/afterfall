@@ -198,12 +198,6 @@ class GameScene extends Phaser.Scene {
       ...this.barricades.map((barricade) => barricade.obstacle),
       ...this.trees.map((tree) => tree.obstacle),
       ...this.urbanDebris.map((debris) => debris.obstacle),
-      new Obstacle(this, 950, 350, 100, 100),
-      new Obstacle(this, 350, 1200, 100, 100),
-      new Obstacle(this, 1300, 950, 100, 100),
-      new Obstacle(this, 1750, 850, 100, 100),
-      new Obstacle(this, 900, 1650, 140, 60),
-      new Obstacle(this, 450, 1650, 60, 140),
     ];
 
     for (const obstacle of this.obstacles) {

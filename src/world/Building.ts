@@ -34,7 +34,9 @@ export default class Building {
 
     rect(0, 0, width, height, 0x272f2d);
     rect(3, 3, width - 6, height - 6, style === "medical" ? 0x878777 : 0x6a6658);
-    const roofColor = style === "house" ? 0x634b3b
+    const houseVariant = Math.floor((x + y) / 10) % 3;
+    const houseRoofs = [0x634b3b, 0x4f5850, 0x555049];
+    const roofColor = style === "house" ? houseRoofs[houseVariant]!
       : style === "medical" ? 0x62685e : 0x414b46;
     rect(8, 8, width - 16, height - 48, roofColor);
 
@@ -42,10 +44,14 @@ export default class Building {
       for (let row = 12; row < height - 46; row += 10) {
         rect(10, row, width - 20, 2, 0x423e32);
         for (let col = 14 + (Math.floor(row / 10) % 2) * 8; col < width - 18; col += 16) {
-          rect(col, row + 2, 2, 6, 0x7b5c43);
+          rect(col, row + 2, 2, 6, houseVariant === 1 ? 0x74806b : houseVariant === 2 ? 0x747668 : 0x7b5c43);
         }
       }
-      rect(width / 2 - 3, 8, 6, height - 48, 0x8a6b4b);
+      if (houseVariant === 1) {
+        rect(8, (height - 40) / 2, width - 16, 5, 0x85806a);
+      } else {
+        rect(width / 2 - 3, 8, 6, height - 48, 0x8a795c);
+      }
       rect(width - 48, 22, 22, 28, 0x302f28);
       rect(width - 50, 18, 22, 26, 0x85705a);
       rect(width - 46, 22, 14, 14, 0x292d29);
@@ -101,8 +107,18 @@ export default class Building {
     rect(5, 10, 3, height - 48, 0x777968);
     rect(width - 8, 10, 3, height - 18, 0x353f39);
     rect(8, height - 43, width - 16, 5, 0x242f2a);
-    rect(10, height - 37, width - 20, 18, signColor);
+    rect(10, height - 37, width - 20, 18, style === "house" ? 0x80745d : signColor);
     rect(12, height - 36, width - 24, 2, 0x8b8266);
+    if (style === "house") {
+      rect(20, height - 33, 30, 20, 0x223033);
+      rect(22, height - 31, 11, 8, 0x60736a);
+      rect(17, height - 26, 36, 4, 0x705b40);
+      rect(width - 58, height - 32, 30, 18, 0x243235);
+      rect(width - 55, height - 30, 24, 3, 0x819085);
+      rect(width / 2 - 14, height - 35, 28, 28, 0x363b32);
+      rect(width / 2 - 11, height - 32, 22, 22, 0x635641);
+      rect(width / 2 + 5, height - 21, 2, 2, 0xb0a17a);
+    }
 
     if (style === "shop") {
       for (let col = 14; col < width - 16; col += 16) {
@@ -114,7 +130,7 @@ export default class Building {
       for (let row = height - 16; row < height - 4; row += 4) {
         rect(width / 2 - 28, row, 56, 1, 0x747565);
       }
-    } else {
+    } else if (style !== "house") {
       for (const px of [22, width - 62]) {
         rect(px, height - 16, 40, 12, 0x233336);
         rect(px + 2, height - 14, 14, 3, 0x637a73);
@@ -128,9 +144,9 @@ export default class Building {
       rect(14 + (i * 37) % (width - 34), height - 5, 8, 2, 0x3b4735);
     }
 
-    const sign = scene.add.text(x, top + height - 28, label, {
+    const sign = scene.add.text(style === "house" ? x + 27 : x, top + height - 28, label, {
       fontFamily: "monospace",
-      fontSize: "12px",
+      fontSize: style === "house" ? "8px" : "12px",
       fontStyle: "bold",
       color: "#d0c5a3",
     }).setOrigin(0.5).setDepth(3);
